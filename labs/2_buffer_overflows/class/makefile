@@ -15,6 +15,7 @@ compile:
 	gcc $(CFLAGS) 5-auth2.c -o 5-auth2.exe
 	gcc $(CFLAGS) 6-code.c -o 6-code.exe
 	gcc $(CFLAGS) 7-environment.c -o 7-environment.exe
+	gcc $(CFLAGS) test-shellcode-32.c -o test-shellcode-32.exe
 
 
 solve:
