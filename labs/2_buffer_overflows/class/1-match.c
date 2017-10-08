@@ -23,6 +23,6 @@ int main(int argc, char **argv)
   if(control == 0x61626364) {
       printf("Congratulations, you win!!! You correctly got the variable to the right value\n");
   } else {
-      printf("Try again, you got 0x%08x\n, instead of 0x61626364", control);
+      printf("Try again, you got 0x%08x , instead of 0x61626364\n", control);
   }
 }
