@@ -7,52 +7,76 @@ from parser import *
 
 
 
-def help():
-	print("\n" + "-"*90)
-	
+def help():	
 	print("usage:")
 	print("\tpython main.py [options]")
 	
 	print("\noptions:")
 	#print("\t-a\t analyse all slices")
-	print("\t-f\t specify file")
+	print("\t-d\t specify slices directory\t (default 'slices/')")
+	print("\t-f\t specify file\t\t\t (default checks all files)")
 	print("\t-i\t interactive shell")
-	print("\t-d\t draw code graph")
+	print("\t-g\t draw code graph")
 	print("\t-h\t help")
 	
-	print("-"*90)
-	
-	
-	
-def print_numbered_list(list):
-	for t in range(len(list)):
-		print("  " + str(t).rjust(2) + "  " + list[t])
+	print("\n")
 
 
 
 def get_available_files(filesDirectory):
 	
-	return [filesDirectory+f for f in listdir(filesDirectory) if isfile(join(filesDirectory, f))]
+	return [f for f in listdir(filesDirectory) if isfile(join(filesDirectory, f))]
+
+
+	
+def print_numbered_list(list):
+	for t in range(len(list)):
+		print(str(t).rjust(4) + "  " + list[t])
+	
+
+
+def shell(slicesDir):
+	
+	while True:
+		files = get_available_files(slicesDir)
+		
+		print("\navailable code slices:")
+		print_numbered_list(files)
+		
+		cmd = raw_input("\n-> ").split()
+		
+		if cmd[0] == "q" or cmd[0] == "quit":
+			break
+		
+		elif cmd[0] == "exit":
+			sys.exit(1)
+		
+		file = files[int(cmd[0])]
+		
+		check_file(slicesDir + file)
 
 
 
 def main():
 	
-	flags = {}
-	slicesDir = "slices/"
+	flags = {"-f": None, "-d": "slices/", "-g": False, "-i": False}
+	#slicesDir = "slices/"
 	
 	n = 1
 	for arg in sys.argv[1:]:
 		
-		if "-h" in sys.argv:
+		if arg == "-h":
 			help()
 			sys.exit(0)
 			
 		elif arg == "-f":
-			flags["-f"] = argv[n+1]			
+			flags["-f"] = sys.argv[n+1]
 			
 		elif arg == "-d":
-			flags["-d"] = True
+			flags["-d"] = sys.argv[n+1]	
+			
+		elif arg == "-g":
+			flags["-g"] = True
 			
 		elif arg == "-i":
 			flags["-i"] = True
@@ -63,11 +87,20 @@ def main():
 		n = n + 1
 	
 	
-	for f in get_available_files(slicesDir):
-		check_file(f)
+	if flags["-f"]:
+		check_file(flags["-d"] + flags["-f"])
+		
+	if flags["-i"]:
+		shell(flags["-d"])
+		
+	if not ( flags["-f"] or flags["-i"] ):
+		for f in get_available_files(flags["-d"]):
+			check_file(flags["-d"] + f)
 	
 	
 	print("\nDone.\n")
+	
+	
 	
 	
 	
