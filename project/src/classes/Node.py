@@ -10,7 +10,8 @@ class Node(object):
 	def __str__(self):
 		out = "Type:\t\t" + self.type + "\n"
 		out += "Name:\t\t" + self.name + "\n"
-		out += "Arguments:\t" + ", ".join(self.arguments) + "\n"
+		#out += "Arguments:\t" + ", ".join(self.arguments) + "\n"
+		out += "Arguments:\t" + self.arguments + "\n"
 		
 		return out	
 	

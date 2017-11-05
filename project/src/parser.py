@@ -28,7 +28,7 @@ def print_file(filePath):
 def get_patterns(filePath):
 	
 	try:
-		print("<- importing vulnerability patterns from '" + filePath + "'")
+		print("\n<- importing vulnerability patterns from '" + filePath + "'")
 		with open(filePath, 'r') as fp:
 			patterns = []
 			
@@ -63,21 +63,30 @@ def check_file(filePath, patterns = None):
 		patterns = get_patterns("patterns.txt")
 	
 	try:
-		print("-> analysing '" + filePath + "'")
+		print("\n-> analysing '" + filePath + "'")
 		
 		# get code snippet from file
-		code = []
+		code = ""
 		with open(filePath, 'r') as fp:
-			[code.append(line.strip()) for line in fp]
-			
-			
-		lastNode = Node.Node("program", "main")
+			for line in fp:
+				code += line
+				
+		code = code.split(';\n')
 		
-		print(lastNode)
+		program = Node.Node("program", "main")
+		
+		for line in code:
+			line = line.replace('\n', '').split('=', 1)
 			
+			if line[0].startswith('$'):
+				var = Node.Node("variable", line[0], line[1])
 			
-		for pattern in patterns:
-			print(pattern)
+			print(var)
+		
+		
+		
+		#for pattern in patterns:
+			#print(pattern)
 		
 		
 	except IOError as e:
