@@ -70,20 +70,8 @@ def check_file(filePath, patterns = None):
 		with open(filePath, 'r') as fp:
 			for line in fp:
 				code += line
-				
-		code = code.split(';\n')
-		
-		program = Node.Node("program", "main")
-		
-		for line in code:
-			line = line.replace('\n', '').split('=', 1)
 			
-			if line[0].startswith('$'):
-				var = Node.Node("variable", line[0], line[1])
-			
-			print(var)
-		
-		
+		program = Node.Node("program", "main", code)
 		
 		#for pattern in patterns:
 			#print(pattern)

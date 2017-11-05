@@ -1,9 +1,26 @@
 
 class Node(object):
 	
-	def __init__(self, type = "???", name = "function", arguments = []):
+	def __init__(self, type = "???", name = "function", code = ""):
 		self.type = type
 		self.name = name
+		
+		arguments = []
+		
+		code = code.split(';\n')
+		for line in code:
+			line = line.replace('\n', '').split('=', 1)
+			
+			if line[0].startswith('$'):
+				newNode = Node.Node("variable", line[0], line[1])
+				
+			else:
+				l = line[0].index('(')
+				r = line[0].index(')')
+				newNode = Node.Node("function", line[0], line[0][l:r])
+			
+			arguments.append(newNode)
+		
 		self.arguments = arguments
 	
 	
