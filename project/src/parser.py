@@ -2,7 +2,7 @@
 import sys
 from itertools import islice
 
-from classes import Pattern
+from classes import Pattern, Node
 
 
 
@@ -51,7 +51,7 @@ def get_patterns(filePath):
 			return patterns
 			
 	except IOError as e:
-		print("Could not load patterns. Maybe you would like to specify a file with '-p'?")
+		print("Could not load patterns.\nMaybe you would like to specify a file with '-p'?")
 		print(e)
 		sys.exit(1)
 
@@ -64,12 +64,22 @@ def check_file(filePath, patterns = None):
 	
 	try:
 		print("-> analysing '" + filePath + "'")
-		#with open(filePath, 'r') as fp:
-			#ln = 1
-			#for line in fp:
-				#print(" {}: {}".format(str(ln).rjust(2), line.strip('\n')))
-				#ln = ln + 1
+		
+		# get code snippet from file
+		code = []
+		with open(filePath, 'r') as fp:
+			[code.append(line.strip()) for line in fp]
 			
+			
+		lastNode = Node.Node("program", "main")
+		
+		print(lastNode)
+			
+			
+		for pattern in patterns:
+			print(pattern)
+		
+		
 	except IOError as e:
 		print("Could not analyse file.")
 		print(e)

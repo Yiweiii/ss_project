@@ -28,6 +28,7 @@ class Pattern(object):
 		return "\n" + str(self)
 	
 	
+	
 	def add_entry_point(self, entryPoint):
 		
 		if not(entryPoint in self.entry_points):
