@@ -15,4 +15,4 @@ class SensitiveSink(object):
 		self.balance += amount
 		return self.balance
 	
-	
+
