@@ -67,39 +67,5 @@ class Node(object):
 			self.arguments.append(argument)
 			
 		return self.arguments
-	
-'''
-	def __init__(self, type = "???", name = "function", code = None):
-		self.type = type
-		self.name = name
-		
-		arguments = []
-		
-		if code:
-			code = code.split(';\n')
-			for line in code:
-				line = line.replace('\n', '').split('=', 1)
-				
-				if line[0].startswith('$'):
-					if len(line) > 1:
-						newNode = Node("variable", line[0], line[1])
-					else:
-						newNode = Node("variable", line[0])
-					
-				else:
-					match = re.search(r'(\w+)\( (\w+)\)', line[0])
-					
-					if match:
-						
-						l = line[0].index('(')
-						r = line[0].index(')')
-						newNode = Node("function", match.group(1), match.group(2))
-						
-						#l = line[0].index('(')
-						#r = line[0].index(')')
-						#newNode = Node("function", line[0], line[0][l:r])
-						
-				arguments.append(newNode)
-			
-		self.arguments = arguments
-'''
+
+

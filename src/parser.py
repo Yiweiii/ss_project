@@ -1,6 +1,9 @@
 
 import sys
+import json
 from itertools import islice
+from pprint import pprint
+
 
 from classes import Pattern, Node
 
@@ -44,6 +47,8 @@ def get_patterns(filePath):
 					
 					patterns.append(pattern)
 					
+					print(pattern)
+					
 				else:
 					# cannot read 5 more lines
 					break
@@ -65,13 +70,11 @@ def check_file(filePath, patterns = None):
 	try:
 		print("\n-> analysing '" + filePath + "'")
 		
-		# get code snippet from file
-		code = ""
-		with open(filePath, 'r') as fp:
-			for line in fp:
-				code += line
+		with open(filePath) as fp:
+			json_data = json.load(fp)
+			pprint(json_data)
 			
-		program = Node.Node("program", "main", code)
+		#program = Node.Node("program", "main", code)
 		
 		#for pattern in patterns:
 			#print(pattern)
