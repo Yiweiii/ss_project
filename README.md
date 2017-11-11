@@ -1,5 +1,3 @@
-# Software Security
+# Software Security Project
 
-## Labs
-
-## Project
+## Usage
