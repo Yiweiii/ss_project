@@ -102,7 +102,9 @@ def main():
 	
 	
 	if not ( flags["-f"] or flags["-i"] ):
+		
 		for f in get_available_files(flags["-d"]):
+			
 			check_file(flags["-d"] + f, patterns)
 	
 	

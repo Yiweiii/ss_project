@@ -5,7 +5,8 @@ from itertools import islice
 from pprint import pprint
 
 
-from classes import Pattern, Node
+from Pattern import Pattern
+from analysis_tools import analyse_php_ast
 
 
 
@@ -43,7 +44,7 @@ def get_patterns(filePath):
 					# convert read lines into a list
 					block = [x for x in block if x !='\n']
 					
-					pattern = Pattern.Pattern(block[0], block[1].split(','), block[2].split(','), block[3].split(','))
+					pattern = Pattern(block[0], block[1].split(','), block[2].split(','), block[3].split(','))
 					
 					patterns.append(pattern)
 					
@@ -71,13 +72,14 @@ def check_file(filePath, patterns = None):
 		print("\n-> analysing '" + filePath + "'")
 		
 		with open(filePath) as fp:
-			json_data = json.load(fp)
-			pprint(json_data)
+			ast = json.load(fp)
+			#pprint(ast)
 			
-		#program = Node.Node("program", "main", code)
+		result = analyse_php_ast(ast, patterns)
 		
-		#for pattern in patterns:
-			#print(pattern)
+		print(result)
+		
+		return result
 		
 		
 	except IOError as e:
