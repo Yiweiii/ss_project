@@ -5,6 +5,16 @@ def italic(string):
 
 
 
+def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
+	
+	print(italic("Program variables: ") + str(variables))
+	print(italic("Tainted: ") + str(tainted))
+	print(italic("Functions: ") + str(functions))
+	print(italic("Sinks: ") + str(sinks))
+	print(italic("Possible patterns of vulnerability: ") + str(possiblePatterns))
+
+
+
 def print_file(filePath):
 	
 	try:

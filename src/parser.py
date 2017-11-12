@@ -5,7 +5,7 @@ from itertools import islice
 from pprint import pprint
 
 from Pattern import Pattern
-from extras import italic
+from extras import italic, print_program_check
 
 
 
@@ -125,21 +125,27 @@ def check_file(filePath, patterns = None):
 		sys.exit(1)
 		
 		
-	sinks = get_functions(ast)
+	possiblePatterns = set()
+	
+	functions = get_functions(ast)
+	sinks = {}
+	
 	variables = list(get_variables(ast))
 	tainted = dict.fromkeys(variables, False)
-	possiblePatterns = []
+	
+	for pattern in patterns:
+		for func, args in functions.iteritems():
+			if func in pattern.sensitive_sinks:
+				sinks[func] = args
+				possiblePatterns.add(pattern)
 	
 	for pattern in patterns:
 		for var in variables:
 			if var in pattern.entry_points:
 				tainted[var] = True
-				possiblePatterns.append(pattern)
-			
-	print(italic("Program variables: ") + str(variables))
-	print(italic("Tainted variables: ") + str(tainted))
-	print(italic("Functions: ") + str(sinks))
-	print(italic("Possible patterns of vulnerability: ") + str(possiblePatterns))
+	
+	
+	print_program_check(variables, tainted, functions, sinks, possiblePatterns)
 	
 	
 	#FIXME find path from sink to variable

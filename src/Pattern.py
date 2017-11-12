@@ -7,6 +7,11 @@ class Pattern(object):
 		self.entry_points = [x.strip('\n') for x in entryPoints]
 		self.escapes = [x.strip('\n') for x in escapes]
 		self.sensitive_sinks = [x.strip('\n') for x in sensitiveSinks]
+		
+		# fix for ignored '$' from JSON
+		for entry in self.entry_points:
+			if entry.startswith("$"):
+				self.entry_points.append(entry[1:])
 	
 	
 	def __str__(self):
