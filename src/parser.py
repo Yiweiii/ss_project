@@ -5,25 +5,7 @@ from itertools import islice
 from pprint import pprint
 
 from Pattern import Pattern
-
-
-
-def print_file(filePath):
-	
-	try:
-		print("\n" + filePath)
-		with open(filePath, 'r') as fp:
-			ln = 1
-			for line in fp:
-				print(" {}: {}".format(str(ln).rjust(2), line.strip('\n')))
-				ln = ln + 1
-			
-	except IOError as e:
-		print(e)
-		#if e.errno == errno.ENOENT:
-			#print("No such filePath or directory: %s" % e)
-		#else:
-			#print(e)
+from extras import italic
 
 
 
@@ -64,52 +46,64 @@ def get_patterns(filePath):
 
 def get_variables(ast):
 	
-	variables = {}
+	variables = set()
+	#print("\n" + str(ast) + "\n")
 	
-	for k, v in ast.iteritems():
-		#if isinstance(v, dict):
-				#variables.update(get_variables(v))
-			
-		#elif isinstance(v, list):
-			#for node in v:
-				#variables.update(get_variables(node))
+	if isinstance(ast, dict):
+		for k, v in ast.iteritems():
+			if k == "kind" and v == "variable":
+				variables.add(ast['name'])
 				
-		#else:
-			#if k == "kind" and v == "variable":
-				#variables[ast['name']] = False
-				
-				
-		if k == "kind" and v == "variable":
-			variables[ast['name']] = False
-		elif isinstance(v, dict):
+			elif isinstance(v, dict):
+				#variables = variables + get_variables(v)
 				variables.update(get_variables(v))
-			
-		else:
-			if isinstance(v, list):
-				for node in v:
-					variables.update(get_variables(node))
 				
-		
+			elif isinstance(v, list):
+				for node in v:
+					#variables = variables + get_variables(v)
+					variables.update(get_variables(v))
+				
+	elif isinstance(ast, list):
+		for node in ast:
+			#variables = variables + get_variables(node)
+			variables.update(get_variables(node))
+	
 	return variables
 
 
-def get_sensitive_sinks(ast):
+
+def get_functions(ast):
 	
-	sensitiveSinks = {}
+	functions = {}
 	
 	for k, v in ast.iteritems():
-		if isinstance(v, dict):
-				variables.update(get_variables(v))
+		if k == "kind" and v == "call":
+			arguments = []
+			for arg in ast['arguments']:
+				if arg['kind'] == "variable":
+					arguments.append(arg['name'])
+			
+			functions[ast['what']['name']] = arguments
+			
+			
+		elif k == "kind" and v == "echo":
+			arguments = []
+			for arg in ast['arguments']:
+				if arg['kind'] == "variable":
+					arguments.append(arg['name'])
+			
+			functions['echo'] = arguments
+			
+			
+		elif isinstance(v, dict):
+			functions.update(get_functions(v))
+			
 			
 		elif isinstance(v, list):
 			for node in v:
-				variables.update(get_variables(node))
-				
-		else:
-			if k == "kind" and v == "call":
-				variables[ast['name']] = False
-	
-	return sensitiveSinks
+				functions.update(get_functions(node))
+		
+	return functions
 
 
 
@@ -131,8 +125,26 @@ def check_file(filePath, patterns = None):
 		sys.exit(1)
 		
 		
-	variables = get_variables(ast)
+	sinks = get_functions(ast)
+	variables = list(get_variables(ast))
+	tainted = dict.fromkeys(variables, False)
 	possiblePatterns = []
+	
+	for pattern in patterns:
+		for var in variables:
+			if var in pattern.entry_points:
+				tainted[var] = True
+				possiblePatterns.append(pattern)
+			
+	print(italic("Program variables: ") + str(variables))
+	print(italic("Tainted variables: ") + str(tainted))
+	print(italic("Functions: ") + str(sinks))
+	print(italic("Possible patterns of vulnerability: ") + str(possiblePatterns))
+	
+	
+	#FIXME find path from sink to variable
+	
+	#FIXME check if sanitization function in that path
 	
 	result = {
 		"Vulnerability": None,
@@ -141,25 +153,7 @@ def check_file(filePath, patterns = None):
 		"Sensitive Sinks": None
 		}
 	
-	for pattern in patterns:
-		for k, v in variables.iteritems():
-			if k in pattern.entry_points:
-				variables[k] = True
-				possiblePatterns.append(pattern)
-			
-	print("Program variables " + str(variables))
-	print("Possible patterns of vulnerability: " + str(possiblePatterns))
-	
-	
-	#FIXME find path from variable to sink
-	
-	#FIXME check if sanitization function in that path
-	
 	return result
-		
-		
-
-
 
 
 
