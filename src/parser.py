@@ -6,7 +6,7 @@ from pprint import pprint
 
 
 from Pattern import Pattern
-from analysis_tools import analyse_php_ast
+from analysis_tools import get_simple_ast, analyse_php_ast
 
 
 
@@ -63,6 +63,28 @@ def get_patterns(filePath):
 
 
 
+
+def get_variables(ast):
+	
+	variables = {}
+	
+	for k, v in ast.iteritems():
+		if isinstance(v, dict):
+				variables.update(get_variables(v))
+			
+		elif isinstance(v, list):
+			for node in v:
+				variables.update(get_variables(node))
+				
+		else:
+			if v == "variable":
+				variables[ast['name']] = False
+	
+	return variables
+
+
+
+
 def check_file(filePath, patterns = None):
 	
 	if patterns is None:
@@ -75,16 +97,46 @@ def check_file(filePath, patterns = None):
 			ast = json.load(fp)
 			#pprint(ast)
 			
-		result = analyse_php_ast(ast, patterns)
-		
-		print(result)
-		
-		return result
-		
-		
 	except IOError as e:
 		print("Could not analyse file.")
 		print(e)
+		sys.exit(1)
+		
+		
+	variables = get_variables(ast)
+	possiblePatterns = []
+	
+	result = {
+		"Vulnerability": None,
+		"Entry point": None,
+		"Sanitization": None,
+		"Sensitive Sinks": None
+		}
+	
+	for pattern in patterns:
+		for k, v in variables.iteritems():
+			if k in pattern.entry_points:
+				variables[k] = True
+				possiblePatterns.append(pattern)
+			
+	print("Program variables " + str(variables))
+	print("Possible patterns of vulnerability: " + str(possiblePatterns))
+	
+	
+	#FIXME find path from variable to sink
+	
+	#FIXME check if sanitization function in that path
+	
+	#ast = get_simple_ast(ast)
+	#ast.visit()
+	
+	#result = analyse_php_ast(ast, patterns)
+	#print(result)
+	
+	return result
+		
+		
+
 
 
 

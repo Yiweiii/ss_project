@@ -3,7 +3,7 @@ class Function(Node):
 	
 	def __init__(self, type = "Function", name = "function", arguments = []):
 		super(type, name)
-		self.arguments = arguments
+	
 	
 	
 	def __str__(self):
@@ -19,21 +19,21 @@ class Function(Node):
 	
 	
 	
-	def visit():
-		for arg in arguments:
-			if arg.tainted:
-				self.tainted = True
-				return True
+	#def visit():
+		#for arg in arguments:
+			#if arg.tainted:
+				#self.tainted = True
+				#return True
 		
-		return False
+		#return False
 	
 	
 	
-	def add_argument(self, argument):
+	#def add_argument(self, argument):
 		
-		if not(argument in self.arguments):
-			self.arguments.append(argument)
+		#if not(argument in self.arguments):
+			#self.arguments.append(argument)
 			
-		return self.arguments
+		#return self.arguments
 	
 	
