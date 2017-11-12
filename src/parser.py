@@ -4,9 +4,7 @@ import json
 from itertools import islice
 from pprint import pprint
 
-
 from Pattern import Pattern
-from analysis_tools import get_simple_ast, analyse_php_ast
 
 
 
@@ -69,6 +67,37 @@ def get_variables(ast):
 	variables = {}
 	
 	for k, v in ast.iteritems():
+		#if isinstance(v, dict):
+				#variables.update(get_variables(v))
+			
+		#elif isinstance(v, list):
+			#for node in v:
+				#variables.update(get_variables(node))
+				
+		#else:
+			#if k == "kind" and v == "variable":
+				#variables[ast['name']] = False
+				
+				
+		if k == "kind" and v == "variable":
+			variables[ast['name']] = False
+		elif isinstance(v, dict):
+				variables.update(get_variables(v))
+			
+		else:
+			if isinstance(v, list):
+				for node in v:
+					variables.update(get_variables(node))
+				
+		
+	return variables
+
+
+def get_sensitive_sinks(ast):
+	
+	sensitiveSinks = {}
+	
+	for k, v in ast.iteritems():
 		if isinstance(v, dict):
 				variables.update(get_variables(v))
 			
@@ -77,11 +106,10 @@ def get_variables(ast):
 				variables.update(get_variables(node))
 				
 		else:
-			if v == "variable":
+			if k == "kind" and v == "call":
 				variables[ast['name']] = False
 	
-	return variables
-
+	return sensitiveSinks
 
 
 
@@ -126,12 +154,6 @@ def check_file(filePath, patterns = None):
 	#FIXME find path from variable to sink
 	
 	#FIXME check if sanitization function in that path
-	
-	#ast = get_simple_ast(ast)
-	#ast.visit()
-	
-	#result = analyse_php_ast(ast, patterns)
-	#print(result)
 	
 	return result
 		
