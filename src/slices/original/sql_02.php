@@ -1,5 +1,0 @@
-<?php
-$u = $_GET['username'];
-$q = "SELECT pass FROM users WHERE user='".$u."'";
-$query = mysql_query($q);
-?>
