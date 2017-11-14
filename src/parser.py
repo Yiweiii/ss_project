@@ -153,7 +153,7 @@ def check_file(filePath, patterns = None):
 	print(red(str(tainted)))
 	
 	
-	#FIXME find path from sink to variable
+	#FIXME find path of assignments from sink to variable
 	
 	#FIXME check if sanitization function in that path
 	
