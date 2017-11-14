@@ -1,4 +1,6 @@
 
+from extras import yellow
+
 class Pattern(object):
 	
 	
@@ -15,10 +17,10 @@ class Pattern(object):
 	
 	
 	def __str__(self):
-		out = "Name:\t\t" + self.name + "\n"
-		out += "Entry points:\t" + ", ".join(self.entry_points) + "\n"
-		out += "Escapes:\t" + ", ".join(self.escapes) + "\n"
-		out += "Sinks:\t\t" + ", ".join(self.sensitive_sinks) + "\n"
+		out = yellow("Name:\t\t") + self.name + "\n"
+		out += yellow("Entry points:\t") + ", ".join(self.entry_points) + "\n"
+		out += yellow("Escapes:\t") + ", ".join(self.escapes) + "\n"
+		out += yellow("Sinks:\t\t") + ", ".join(self.sensitive_sinks) + "\n"
 		
 		return out	
 	

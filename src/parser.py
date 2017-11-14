@@ -5,14 +5,15 @@ from itertools import islice
 from pprint import pprint
 
 from Pattern import Pattern
-from extras import italic, print_program_check
+from extras import italic, underline, bold, red, green
+from extras import propagate_taint, print_program_check
 
 
 
 def get_patterns(filePath):
 	
 	try:
-		print("\n<- importing vulnerability patterns from '" + filePath + "'")
+		print(bold("\n<- importing vulnerability patterns from '" + filePath + "'"))
 		with open(filePath, 'r') as fp:
 			patterns = []
 			
@@ -113,7 +114,7 @@ def check_file(filePath, patterns = None):
 		patterns = get_patterns("patterns.txt")
 	
 	try:
-		print("\n-> analysing '" + filePath + "'")
+		print(bold("\n-> analysing '" + filePath + "'"))
 		
 		with open(filePath) as fp:
 			ast = json.load(fp)
@@ -145,7 +146,11 @@ def check_file(filePath, patterns = None):
 				tainted[var] = True
 	
 	
-	print_program_check(variables, tainted, functions, sinks, possiblePatterns)
+	#print_program_check(variables, tainted, functions, sinks, possiblePatterns)
+	
+	print(green(str(tainted)))
+	propagate_taint(ast, tainted)
+	print(red(str(tainted)))
 	
 	
 	#FIXME find path from sink to variable

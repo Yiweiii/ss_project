@@ -98,10 +98,10 @@ def main():
 		shell(flags["-d"])
 		
 		
-	patterns = get_patterns(flags["-p"])
 	
 	
 	if not ( flags["-f"] or flags["-i"] ):
+		patterns = get_patterns(flags["-p"])
 		
 		for f in get_available_files(flags["-d"]):
 			
