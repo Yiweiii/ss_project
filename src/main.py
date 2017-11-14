@@ -105,7 +105,9 @@ def main():
 		
 		for f in get_available_files(flags["-d"]):
 			
-			check_file(flags["-d"] + f, patterns)
+			vulnerabilities = check_file(flags["-d"] + f, patterns)
+			
+			print(vulnerabilities)
 	
 	
 	print("\nDone.\n")
