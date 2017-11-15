@@ -103,11 +103,14 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 	
 	for func, args in sinks.iteritems():
 		path.append(func)
+		
 		for arg in args:
-			stack = [arg]
+			stack = list(args)
+			
 			while stack:
 				
-				print([x['name'] for x in stack])
+				print([">> "+str(x)+" <<\n" for x in stack])
+				print("")
 				
 				node = stack.pop()
 				if node['kind'] == "variable":
@@ -121,32 +124,68 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 					assign = find_assign(ast, node['name'])
 					
 					if assign is not None:
-						path.append(node['name'])
-						right = assign['right']
+						stack.append(assign['right'])
+						#path.append(node['name'])
+						#right = assign['right']
 						
-						if right['kind'] == "call" or right['kind'] == "variable":
-							#path.append(assign['right']['name'])
-							pass
+						#if right['kind'] == "call" or right['kind'] == "variable":
+							##path.append(assign['right']['name'])
+							#pass
 							
-						else:
-							for var in get_variables(right):
-								if var not in stack:
-									stack.append(var)
-							
+						#else:
+							#for var in get_variables(right):
+								#if var not in stack:
+									#stack.append(var)
+					
+				elif node['kind'] == "call":
+					print("FIXME: function calls not implemented")
+					
+					path.append(node['what']['name'])
+					
+					# check if sanitization function
+					for pattern in patterns:
+						if node['what']['name'] in pattern.escapes:
+							continue
+					
+					for arg in node['arguments']:
+						if arg['kind'] == "variable" or arg['kind'] == "call":
+							#arguments.append(arg['name'])
+							stack.append(arg)
+					
+					
+				elif node['kind'] == "if":
+					print("FIXME: function calls not implemented")				
+					
+				elif node['kind'] == "while":
+					print("FIXME: function calls not implemented")
+					
+				#elif node['kind'] == "encapsed":
+				else:
+					
+					functions = get_calls(node)
+					
+					if functions:
+						for func in functions:
+							if func not in stack:
+								stack.append(func)
 						
+					else:
+						for var in get_variables(node):
+							if var not in stack:
+								stack.append(var)
 					
-				elif isinstance(node, dict):
-					for k, v in node.iteritems():
-						if isinstance(v, dict):
-							stack.append(v)
+				#elif isinstance(node, dict):
+					#for k, v in node.iteritems():
+						#if isinstance(v, dict):
+							#stack.append(v)
 							
-						elif isinstance(node, list):
-							for n in node:
-								stack.append(n)
+						#elif isinstance(node, list):
+							#for n in node:
+								#stack.append(n)
 					
-				elif isinstance(node, list):
-					for n in node:
-						stack.append(n)
+				#elif isinstance(node, list):
+					#for n in node:
+						#stack.append(n)
 	
 	return path
 
