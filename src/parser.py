@@ -107,7 +107,7 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 			stack = [arg]
 			while stack:
 				
-				#print([x['name'] for x in stack])
+				print([x['name'] for x in stack])
 				
 				node = stack.pop()
 				if node['kind'] == "variable":
