@@ -109,15 +109,17 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 			
 			while stack:
 				
-				print([">> "+str(x)+" <<\n" for x in stack])
+				print(blue(str(path)))
+				for x in stack:
+					print(">> "+str(x)+" <<")
 				print("")
 				
 				node = stack.pop()
 				if node['kind'] == "variable":
+					path.append(node['name'])
 					
 					for pattern in patterns:
 						if node['name'] in pattern.entry_points:
-							path.append(node['name'])
 							return path
 					
 					#print("- " + node['name'])
@@ -161,7 +163,6 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 					
 				#elif node['kind'] == "encapsed":
 				else:
-					
 					functions = get_calls(node)
 					
 					if functions:

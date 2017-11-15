@@ -166,6 +166,9 @@ def get_variables(ast):
 
 def get_calls(ast):
 	
+	print(green(str(ast)))
+	print("")
+	
 	calls = []
 	
 	if isinstance(ast, dict):
@@ -183,6 +186,9 @@ def get_calls(ast):
 	elif isinstance(ast, list):
 		for node in ast:
 			calls = calls + get_calls(node)
+			
+	print(yellow(str(calls)))
+	print("")
 	
 	return calls
 
