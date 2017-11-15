@@ -6,7 +6,6 @@ from os.path import isfile, join
 from parser import *
 
 
-
 def help():	
 	print("usage:")
 	print("\tpython main.py [options]")
@@ -92,7 +91,7 @@ def main():
 	
 	
 	if flags["-f"]:
-		check_file(flags["-d"] + flags["-f"])
+		print(check_file(flags["-d"] + flags["-f"]))
 		
 	if flags["-i"]:
 		shell(flags["-d"])

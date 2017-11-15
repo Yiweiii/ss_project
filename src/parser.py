@@ -6,7 +6,7 @@ from pprint import pprint
 
 from Pattern import Pattern
 from extras import italic, underline, bold, red, green
-from extras import find_assign, get_variables, propagate_taint, print_program_check
+from extras import find_assign, get_variables, get_variable_names, propagate_taint, print_program_check
 
 
 
@@ -103,16 +103,31 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 	path = []
 	
 	for func, args in sinks.iteritems():
+		path.append(func)
 		for arg in args:
 			stack = [arg]
 			while stack:
+				
+				print([x['name'] for x in stack])
+				
 				node = stack.pop()
 				if node['kind'] == "variable":
-					assign = find_assign(ast, node['name'])
 					
-					if assign:
+					print("- " + node['name'])
+					assign = find_assign(ast, node['name'])
+					path.append(node['name'])
+					
+					if assign is not None:
 						right = assign['right']
 						
+						if right['kind'] == "call" or right['kind'] == "variable":
+							path.append(assign['right']['name'])
+							
+						else:
+							for var in get_variables(right):
+								stack.append(var)
+							
+							#([stack.append(x['name']) for x in get_variables(right)])
 						
 					
 				elif isinstance(node, dict):
@@ -162,42 +177,51 @@ def check_file(filePath, patterns = None):
 				possiblePatterns.add(pattern)
 				
 	
-	variables = list(get_variables(ast))
-	tainted = dict.fromkeys(variables, False)
+	#variables = list(get_variable_names(ast))
+	#tainted = dict.fromkeys(variables, False)
 	
-	for pattern in patterns:
-		for var in variables:
-			if var in pattern.entry_points:
-				tainted[var] = True
-	
-	
-	print_program_check(variables, tainted, functions, sinks, possiblePatterns)
-	
+	#for pattern in patterns:
+		#for var in variables:
+			#if var in pattern.entry_points:
+				#tainted[var] = True
+		
 	#print(green(str(tainted)))
 	#propagate_taint(ast, tainted)
 	#print(red(str(tainted)))
+	#print_program_check(variables, tainted, functions, sinks, possiblePatterns)
+	
 	
 	#FIXME find path of assignments from sink to variable
 	path = path_from_sink_to_entry(ast, sinks, patterns)
 	print(italic("path: ") + str(path))
 	
-	result = []
+	newPatterns = []
+	for pattern in possiblePatterns:
+		for var in path:
+			if var in pattern.entry_points:
+				newPatterns.append(pattern)
 	
-	#FIXME check if sanitization function in that path
+	possiblePatterns = newPatterns
+	
+	result = ""
+	
 	for element in path:
-		for pattern in patterns:
+		for pattern in possiblePatterns:
 			if element not in pattern.escapes:
-				result.append({
-					"Vulnerability": pattern.name,
-					"Entry point": path[0],
-					"Sanitization": None,
-					"Sensitive Sink": path[-1]
-					})
+				
+				result += "\nVulnerability: " + pattern.name \
+						+ "\nEntry point: " + path[-1] \
+						+ "\nSanitization: None" \
+						+ "\nSensitive Sink: " + path[0] \
+						+ "\n"
+				
+				#FIXME return all matching
+				return red(result)
+				
+	if result == "":
+		result = green("Vulnerability: None")
 	
-	if not result:
-		result = green(str({ "Vulnerability": None }))
-	
-	return result
+	return red(str(result))
 
 
 

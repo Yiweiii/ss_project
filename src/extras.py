@@ -9,7 +9,7 @@ class Color:
 	BOLD = '\033[1m'
 	UNDERLINE = '\033[4m'
 	ITALIC = '\x1B[3m'
-
+	
 
 def green(string): return Color.GREEN + string + Color.END
 def red(string): return Color.RED + string + Color.END
@@ -23,35 +23,33 @@ def bold(string): return Color.BOLD + string + Color.END
 
 def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
 	
-	print(italic("Program variables: ") + str(variables))
-	print(italic("Tainted: ") + str(tainted))
+	print(italic("Variables: ") + str(variables))
+	print(red(italic("Tainted: ") + red(str(tainted))))
 	print(italic("Functions: ") + str(functions))
-	print(italic("Sinks: ") + str(sinks))
+	print(red(italic("Sinks: ") + red(str(sinks))))
 	print(italic(yellow("Possible patterns of vulnerability: ")) + str(possiblePatterns))
 
 
 
 def find_assign(ast, variable):
-	
 	node = None
 	
 	for k, v in ast.iteritems():
-		if k == "kind" and v == "assign":
-			if ast['left']['kind'] == "variable" and ast['left']['name'] == variable:
-				node = ast
+		if k == "kind" and v == "assign":			
+			left = ast['left']
 			
+			if left['kind'] == "variable" and left['name'] == variable:
+				return ast
+				
 		elif isinstance(v, dict):
-			node = find_assign(v, variable)
+			return find_assign(v, variable)
 			
 		elif isinstance(v, list):
 			for element in v:
 				node = find_assign(element, variable)
-		
-		if node is not None:
-			break
+				if node is not None:
+					break
 	
-	#print("!!!!!!!!!!!!!!!!")
-	#print(node)
 	return node
 
 
@@ -111,10 +109,9 @@ def propagate_taint(ast, variables):
 
 
 
-def get_variables(ast):
+def get_variable_names(ast):
 	
 	variables = set()
-	#print("\n" + str(ast) + "\n")
 	
 	if isinstance(ast, dict):
 		for k, v in ast.iteritems():
@@ -122,18 +119,45 @@ def get_variables(ast):
 				variables.add(ast['name'])
 				
 			elif isinstance(v, dict):
-				#variables = variables + get_variables(v)
-				variables.update(get_variables(v))
+				#variables = variables + get_variable_names(v)
+				variables.update(get_variable_names(v))
 				
 			elif isinstance(v, list):
 				for node in v:
-					#variables = variables + get_variables(v)
-					variables.update(get_variables(v))
+					#variables = variables + get_variable_names(v)
+					variables.update(get_variable_names(v))
 				
 	elif isinstance(ast, list):
 		for node in ast:
-			#variables = variables + get_variables(node)
-			variables.update(get_variables(node))
+			#variables = variables + get_variable_names(node)
+			variables.update(get_variable_names(node))
+	
+	return variables
+
+
+def get_variables(ast):
+	
+	variables = []
+	
+	if isinstance(ast, dict):
+		for k, v in ast.iteritems():
+			if k == "kind" and v == "variable":
+				variables.append(ast)
+				#variables.add(ast)
+				
+			elif isinstance(v, dict):
+				variables = variables + get_variables(v)
+				#variables.update(get_variables(v))
+				
+			elif isinstance(v, list):
+				for node in v:
+					variables = variables + get_variables(v)
+					#variables.update(get_variables(v))
+				
+	elif isinstance(ast, list):
+		for node in ast:
+			variables = variables + get_variables(node)
+			#variables.update(get_variables(node))
 	
 	return variables
 
