@@ -11,6 +11,7 @@ class Color:
 	ITALIC = '\x1B[3m'
 	
 
+def blue(string): return Color.BLUE + string + Color.END
 def green(string): return Color.GREEN + string + Color.END
 def red(string): return Color.RED + string + Color.END
 def yellow(string): return Color.YELLOW + string + Color.END

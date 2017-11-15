@@ -5,8 +5,7 @@ from itertools import islice
 from pprint import pprint
 
 from Pattern import Pattern
-from extras import italic, underline, bold, red, green
-from extras import find_assign, get_variables, get_variable_names, propagate_taint, print_program_check
+from extras import *
 
 
 
@@ -108,26 +107,32 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 			stack = [arg]
 			while stack:
 				
-				print([x['name'] for x in stack])
+				#print([x['name'] for x in stack])
 				
 				node = stack.pop()
 				if node['kind'] == "variable":
 					
-					print("- " + node['name'])
+					for pattern in patterns:
+						if node['name'] in pattern.entry_points:
+							path.append(node['name'])
+							return path
+					
+					#print("- " + node['name'])
 					assign = find_assign(ast, node['name'])
-					path.append(node['name'])
 					
 					if assign is not None:
+						path.append(node['name'])
 						right = assign['right']
 						
 						if right['kind'] == "call" or right['kind'] == "variable":
-							path.append(assign['right']['name'])
+							#path.append(assign['right']['name'])
+							pass
 							
 						else:
 							for var in get_variables(right):
-								stack.append(var)
+								if var not in stack:
+									stack.append(var)
 							
-							#([stack.append(x['name']) for x in get_variables(right)])
 						
 					
 				elif isinstance(node, dict):
@@ -175,25 +180,11 @@ def check_file(filePath, patterns = None):
 			if func in pattern.sensitive_sinks:
 				sinks[func] = args
 				possiblePatterns.add(pattern)
-				
-	
-	#variables = list(get_variable_names(ast))
-	#tainted = dict.fromkeys(variables, False)
-	
-	#for pattern in patterns:
-		#for var in variables:
-			#if var in pattern.entry_points:
-				#tainted[var] = True
-		
-	#print(green(str(tainted)))
-	#propagate_taint(ast, tainted)
-	#print(red(str(tainted)))
-	#print_program_check(variables, tainted, functions, sinks, possiblePatterns)
 	
 	
 	#FIXME find path of assignments from sink to variable
 	path = path_from_sink_to_entry(ast, sinks, patterns)
-	print(italic("path: ") + str(path))
+	print(italic("path: " + str(path)))
 	
 	newPatterns = []
 	for pattern in possiblePatterns:
