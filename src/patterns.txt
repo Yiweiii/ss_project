@@ -1,12 +1,12 @@
 
 SQL injection (MySQL)
 $_GET,$_POST,$_COOKIE,$_REQUEST
-mysql_escape_string,mysql_real_escape_string,addslashes
+mysql_escape_string,mysql_real_escape_string,addslashes, preg_replace, preg_replace_callback, stripcslashes
 mysql_query,mysql_unbuffered_query,mysql_db_query,mssql_query
 
 SQL injection (PostgreSQL)
 $_GET,$_POST,$_COOKIE,$_REQUEST
-pg_escape_string,pg_escape_bytea
+pg_escape_string,pg_escape_bytea, preg_replace, preg_replace_callback
 pg_query,pg_send_query
 
 SQL injection (SQLite)
@@ -26,7 +26,7 @@ mysqli_conect
 
 XSS
 $_GET,$_POST,$_COOKIE,$_REQUEST,$_SERVER
-strip_tags,filter_var,htmlspecialchars,htmlentities,html_escape,encodeForHTMLAttribute
+strip_tags,filter_var,htmlspecialchars,htmlentities,html_escape,encodeForHTMLAttribute, preg_replace, preg_replace_callback, quoted_printable_encode
 echo,print,alert,#eventhandlers#
 
 cmd injection
