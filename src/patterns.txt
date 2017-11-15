@@ -1,15 +1,35 @@
 
-SQL injection
-$_GET,$_POST,$_COOKIE
-mysql_escape_string,mysql_real_escape_string,mysql_real_escape_string
-mysql_query,mysql_unbuffered_query,mysql_db_query
+SQL injection (MySQL)
+$_GET,$_POST,$_COOKIE,$_REQUEST
+mysql_escape_string,mysql_real_escape_string,addslashes
+mysql_query,mysql_unbuffered_query,mysql_db_query,mssql_query
 
-SQL injection
-$_GET,$_POST,$_COOKIE
+SQL injection (PostgreSQL)
+$_GET,$_POST,$_COOKIE,$_REQUEST
 pg_escape_string,pg_escape_bytea
 pg_query,pg_send_query
 
+SQL injection (SQLite)
+$_GET,$_POST,$_COOKIE,$_REQUEST
+sql_make_string
+odbc_connect,odbc_exec,odbc_close
+
+SQL injection
+$_FILES
+buffer
+file_get_contents
+
+SQL errors
+$_GET,$_POST,$_COOKIE,$_REQUEST
+set_charset
+mysqli_conect
+
 XSS
+$_GET,$_POST,$_COOKIE,$_REQUEST,$_SERVER
+strip_tags,filter_var,htmlspecialchars,htmlentities,html_escape,encodeForHTMLAttribute
+echo,print,alert,#eventhandlers#
+
+cmd injection
 $_GET,$_POST,$_COOKIE
-strip_tags,filter_var
-echo
+escapeshellcmd,escapeshellarg
+exec

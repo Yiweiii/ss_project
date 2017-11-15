@@ -53,7 +53,8 @@ def get_functions(ast):
 			arguments = []
 			for arg in ast['arguments']:
 				if arg['kind'] == "variable":
-					arguments.append(arg['name'])
+					#arguments.append(arg['name'])
+					arguments.append(arg)
 			
 			functions[ast['what']['name']] = arguments
 			
@@ -62,7 +63,8 @@ def get_functions(ast):
 			arguments = []
 			for arg in ast['arguments']:
 				if arg['kind'] == "variable":
-					arguments.append(arg['name'])
+					#arguments.append(arg['name'])
+					arguments.append(arg)
 			
 			functions['echo'] = arguments
 			
@@ -102,14 +104,29 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 	
 	for func, args in sinks.iteritems():
 		for arg in args:
-			
-			node = arg
-			while node:
-				print("FIXME") #FIXME
-				node = find_assign(ast, node)
-				if node:
-					right = node['right']
-					path.append(right)
+			stack = [arg]
+			while stack:
+				node = stack.pop()
+				if node['kind'] == "variable":
+					assign = find_assign(ast, node['name'])
+					
+					if assign:
+						right = assign['right']
+						
+						
+					
+				elif isinstance(node, dict):
+					for k, v in node.iteritems():
+						if isinstance(v, dict):
+							stack.append(v)
+							
+						elif isinstance(node, list):
+							for n in node:
+								stack.append(n)
+					
+				elif isinstance(node, list):
+					for n in node:
+						stack.append(n)
 	
 	return path
 
@@ -145,16 +162,16 @@ def check_file(filePath, patterns = None):
 				possiblePatterns.add(pattern)
 				
 	
-	#variables = list(get_variables(ast))
-	#tainted = dict.fromkeys(variables, False)
+	variables = list(get_variables(ast))
+	tainted = dict.fromkeys(variables, False)
 	
-	#for pattern in patterns:
-		#for var in variables:
-			#if var in pattern.entry_points:
-				#tainted[var] = True
+	for pattern in patterns:
+		for var in variables:
+			if var in pattern.entry_points:
+				tainted[var] = True
 	
 	
-	##print_program_check(variables, tainted, functions, sinks, possiblePatterns)
+	print_program_check(variables, tainted, functions, sinks, possiblePatterns)
 	
 	#print(green(str(tainted)))
 	#propagate_taint(ast, tainted)

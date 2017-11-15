@@ -9,7 +9,8 @@ class Color:
 	BOLD = '\033[1m'
 	UNDERLINE = '\033[4m'
 	ITALIC = '\x1B[3m'
-        
+
+
 def green(string): return Color.GREEN + string + Color.END
 def red(string): return Color.RED + string + Color.END
 def yellow(string): return Color.YELLOW + string + Color.END
@@ -35,7 +36,7 @@ def find_assign(ast, variable):
 	node = None
 	
 	for k, v in ast.iteritems():
-		if k == u"kind" and v == u"assign":
+		if k == "kind" and v == "assign":
 			if ast['left']['kind'] == "variable" and ast['left']['name'] == variable:
 				node = ast
 			
@@ -48,9 +49,10 @@ def find_assign(ast, variable):
 		
 		if node is not None:
 			break
-
-	return node
 	
+	#print("!!!!!!!!!!!!!!!!")
+	#print(node)
+	return node
 
 
 
