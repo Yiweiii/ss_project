@@ -5,8 +5,8 @@ from itertools import islice
 from pprint import pprint
 
 from Pattern import Pattern
-from extras import *
 from getters import *
+from extras import *
 
 
 
@@ -44,156 +44,84 @@ def get_patterns(filePath):
 
 
 
-def get_functions(ast):
+
+
+	#print(blue(str(path)))
+	#for x in stack:
+		#print(">> "+str(x)+" <<")
+	#print("")
 	
-	functions = {}
 	
-	for k, v in ast.iteritems():
-		if k == "kind" and v == "call":
-			arguments = []
-			for arg in ast['arguments']:
-				if arg['kind'] == "variable":
-					#arguments.append(arg['name'])
-					arguments.append(arg)
-			
-			functions[ast['what']['name']] = arguments
-			
-			
-		elif k == "kind" and v == "echo":
-			arguments = []
-			for arg in ast['arguments']:
-				if arg['kind'] == "variable":
-					#arguments.append(arg['name'])
-					arguments.append(arg)
-			
-			functions['echo'] = arguments
-			
-			
-		elif isinstance(v, dict):
-			functions.update(get_functions(v))
-			
-			
-		elif isinstance(v, list):
-			for node in v:
-				functions.update(get_functions(node))
-		
-	return functions
+def path_from_sink_to_entry(ast, node = None, patterns = None):
+	
+	print(blue(">>> " + str(node) + " <<<\n"))
 
-
-
-
-def path_from_sink_to_entry(ast, sink, patterns = None):
 	
 	if patterns is None:
 		patterns = get_patterns("patterns.txt")
 	
-	
-	functions = get_calls(ast)
-	sinks = []
-	
-	# find sensitive sinks and delete unmatched patterns
-	newPatterns = set()
-	for pattern in patterns:
-		for func in functions:
-			if func['what']['name'] in pattern.sensitive_sinks:
-				sinks.append(func)
-				newPatterns.add(pattern)
-				
-	patterns = newPatterns
+	if node is None:
+		node = ast
 	
 	
-	path = [sink['what']['name']]
-	
-	#for arg in sink['arguments']:
-	
-	stack = list(sink['arguments'])
-	visited = []
-	
-	while stack:
+	if node['kind'] == "call":
 		
-		print(blue(str(path)))
-		for x in stack:
-			print(">> "+str(x)+" <<")
+		print(purple("F -- " + node['what']['name'] + " --\n"))
+		# check if function is a sanitization function
+		for pattern in patterns:
+			if node['what']['name'] in pattern.escapes:
+				print(green("ESC -- " + node['what']['name'] + " --\n"))
+				return None
+		
+		for arg in node['arguments']:
+			path = path_from_sink_to_entry(ast, arg, patterns)
+			print(cyan("F -- " + str(path) + " --\n"))
+			if path is not None:
+				return path.append(node['what']['name'])
+		
+		
+	elif node['kind'] == "variable":
+		print(yellow("VAR -- " + node['name'] + " --\n"))
+		
+		# check if variable is an entry point
+		for pattern in patterns:
+			if node['name'] in pattern.entry_points:
+				print(yellow("E -- " + node['name'] + " --\n"))
+				return [node['name']]
+		
+		assign = get_assign(ast, node['name'])
+		
+		if assign is not None:
+			path = path_from_sink_to_entry(ast, assign['right'], patterns)
+			
+			if path is not None:
+				print(cyan("A -- " + str(path) + " --\n"))
+				return path.append(node['name'])
+			else:
+				return None
+		
+	elif node['kind'] == "if":
+		print(red("FIXME: function calls not implemented"))			
+		
+		
+	elif node['kind'] == "while":
+		print(red("FIXME: function calls not implemented"))
+		
+		
+	else:
+		nodesOfInterest = get_calls(node) + get_variables(node)
+		for x in nodesOfInterest:
+			print(red("R -- " + str(x) + " --"))
 		print("")
 		
-		node = stack.pop()
-		if node['kind'] == "variable":
-			
-			for pattern in patterns:
-				if node['name'] in pattern.entry_points:
-					path.append(node['name'])
-					return path
-			
-			assign = find_assign(ast, node['name'])
-			
-			if assign is not None and assign not in visited:
-				visited.append(assign)
-				path.append(node['name'])
-				stack.append(assign['right'])
-				#path.append(node['name'])
-				#right = assign['right']
-				
-				#if right['kind'] == "call" or right['kind'] == "variable":
-					##path.append(assign['right']['name'])
-					#pass
-					
-				#else:
-					#for var in get_variables(right):
-						#if var not in stack:
-							#stack.append(var)
-			
-		elif node['kind'] == "call":
-			print(red("FIXME: function calls not implemented"))
-			
-			path.append(node['what']['name'])
-			
-			# check if sanitization function
-			for pattern in patterns:
-				if node['what']['name'] in pattern.escapes:
-					continue
-			
-			for arg in node['arguments']:
-				if arg['kind'] == "variable" or arg['kind'] == "call":
-					#arguments.append(arg['name'])
-					stack.append(arg)
-			
-			
-		elif node['kind'] == "if":
-			print(red("FIXME: function calls not implemented"))			
-			
-		elif node['kind'] == "while":
-			print(red("FIXME: function calls not implemented"))
-			
-		#elif node['kind'] == "encapsed":
-		else:
-			stack = stack + get_calls(node) + get_variables(node)
-			
-			#functions = get_calls(node)
-			#variables = get_variables(node)
-			#if functions:
-				#for func in functions:
-					#if func not in stack:
-						#stack.append(func)
-				
-			#else:
-				#for var in get_variables(node):
-					#if var not in stack:
-						#stack.append(var)
-			
-		#elif isinstance(node, dict):
-			#for k, v in node.iteritems():
-				#if isinstance(v, dict):
-					#stack.append(v)
-					
-				#elif isinstance(node, list):
-					#for n in node:
-						#stack.append(n)
-			
-		#elif isinstance(node, list):
-			#for n in node:
-				#stack.append(n)
-
-	return path
+		for n in nodesOfInterest:
+			path = path_from_sink_to_entry(ast, n, patterns)
+			if path is not None:
+				print(cyan("R -- " + str(path) + " --\n"))
+				return path
+	
+	
+	return None
 
 
 
@@ -237,22 +165,25 @@ def check_file(filePath, patterns = None):
 	
 	
 	# compute the result
-	result = ""
-	for element in path:
-		for pattern in patterns:
-			if element not in pattern.escapes:
-				
-				result += "\nVulnerability: " + pattern.name \
-						+ "\nEntry point: " + path[-1] \
-						+ "\nSanitization: None" \
-						+ "\nSensitive Sink: " + path[0] \
-						+ "\n"
-				
-				#FIXME return all matching
-				return red(result)
-				
-	if result == "":
+	
+	if path is None:
 		result = green("Vulnerability: None")
+		
+	else:
+		result = ""
+		for element in path:
+			for pattern in patterns:
+				if element not in pattern.escapes:
+					
+					result += "\nVulnerability: " + pattern.name \
+							+ "\nEntry point: " + path[-1] \
+							+ "\nSanitization: None" \
+							+ "\nSensitive Sink: " + path[0] \
+							+ "\n"
+					
+					#FIXME return all matching
+					return red(result)
+	
 	
 	return result
 

@@ -1,6 +1,6 @@
 
 
-def find_assign(ast, variable):
+def get_assign(ast, variable):
 	node = None	
 	
 	#for k, v in sorted(ast.iteritems(), reverse=True):
@@ -12,11 +12,11 @@ def find_assign(ast, variable):
 				return ast	
 			
 		elif isinstance(v, dict):
-			return find_assign(v, variable)
+			return get_assign(v, variable)
 			
 		elif isinstance(v, list):
 			for element in reversed(v):
-				node = find_assign(element, variable)
+				node = get_assign(element, variable)
 				if node is not None:
 					break
 			
@@ -105,33 +105,28 @@ def get_variable_names(ast):
 	return variables
 
 
-def get_variables(ast):
+def get_variables(node):
 	
 	variables = []
 	
-	if isinstance(ast, dict):
-		for k, v in ast.iteritems():
-			
+	if isinstance(node, dict):
+		for k, v in node.iteritems():
 			if k == "kind" and v == "call":
 				continue;
 				
 			elif k == "kind" and v == "variable":
-				variables.append(ast)
-				#variables.add(ast)
+				variables.append(node)
 				
 			elif isinstance(v, dict):
 				variables = variables + get_variables(v)
-				#variables.update(get_variables(v))
 				
 			elif isinstance(v, list):
-				for node in v:
-					variables = variables + get_variables(v)
-					#variables.update(get_variables(v))
+				for n in v:
+					variables = variables + get_variables(n)
 				
-	elif isinstance(ast, list):
-		for node in ast:
-			variables = variables + get_variables(node)
-			#variables.update(get_variables(node))
+	elif isinstance(node, list):
+		for n in node:
+			variables = variables + get_variables(n)
 	
 	return variables
 
@@ -163,6 +158,43 @@ def get_calls(ast):
 	#print("")
 	
 	return calls
+
+
+
+def get_functions(ast):
+	
+	functions = {}
+	
+	for k, v in ast.iteritems():
+		if k == "kind" and v == "call":
+			arguments = []
+			for arg in ast['arguments']:
+				if arg['kind'] == "variable":
+					#arguments.append(arg['name'])
+					arguments.append(arg)
+			
+			functions[ast['what']['name']] = arguments
+			
+			
+		elif k == "kind" and v == "echo":
+			arguments = []
+			for arg in ast['arguments']:
+				if arg['kind'] == "variable":
+					#arguments.append(arg['name'])
+					arguments.append(arg)
+			
+			functions['echo'] = arguments
+			
+			
+		elif isinstance(v, dict):
+			functions.update(get_functions(v))
+			
+			
+		elif isinstance(v, list):
+			for node in v:
+				functions.update(get_functions(node))
+		
+	return functions
 
 
 

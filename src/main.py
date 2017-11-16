@@ -4,6 +4,8 @@ from os import listdir
 from os.path import isfile, join
 
 from parser import *
+from extras import bold
+
 
 
 def help():	
@@ -108,7 +110,7 @@ def main():
 			
 			print(vulnerabilities)
 	
-	print("\nDone.\n")
+	print(bold("\nDone.\n"))
 	
 	
 	
