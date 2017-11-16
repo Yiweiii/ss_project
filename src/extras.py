@@ -2,6 +2,7 @@
 class Color:
 	PURPLE = '\033[95m'
 	BLUE = '\033[94m'
+	CYAN = '\033[96m'
 	GREEN = '\033[92m'
 	YELLOW = '\033[93m'
 	RED = '\033[91m'
@@ -11,7 +12,9 @@ class Color:
 	ITALIC = '\x1B[3m'
 	
 
+def purple(string): return Color.PURPLE + string + Color.END
 def blue(string): return Color.BLUE + string + Color.END
+def cyan(string): return Color.CYAN + string + Color.END
 def green(string): return Color.GREEN + string + Color.END
 def red(string): return Color.RED + string + Color.END
 def yellow(string): return Color.YELLOW + string + Color.END
@@ -32,27 +35,25 @@ def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
 
 
 
-def find_assign(ast, variable):
-	node = None	
+def print_file(filePath):
 	
-	#for k, v in sorted(ast.iteritems(), reverse=True):
-	for k, v in ast.iteritems():
-		if k == "kind" and v == "assign":			
-			left = ast['left']
+	try:
+		print("\n" + filePath)
+		with open(filePath, 'r') as fp:
+			ln = 1
+			for line in fp:
+				print(" {}: {}".format(str(ln).rjust(2), line.strip('\n')))
+				ln = ln + 1
 			
-			if left['kind'] == "variable" and left['name'] == variable:
-				return ast	
-			
-		elif isinstance(v, dict):
-			return find_assign(v, variable)
-			
-		elif isinstance(v, list):
-			for element in reversed(v):
-				node = find_assign(element, variable)
-				if node is not None:
-					break
-			
-	return node
+	except IOError as e:
+		print(e)
+		#if e.errno == errno.ENOENT:
+			#print("No such filePath or directory: %s" % e)
+		#else:
+			#print(e)
+
+
+
 
 
 
@@ -108,131 +109,4 @@ def propagate_taint(ast, variables):
 					return True
 	
 	return False
-
-
-
-def get_variable_names(ast):
-	
-	variables = set()
-	
-	if isinstance(ast, dict):
-		for k, v in ast.iteritems():
-			if k == "kind" and v == "variable":
-				variables.add(ast['name'])
-				
-			elif isinstance(v, dict):
-				#variables = variables + get_variable_names(v)
-				variables.update(get_variable_names(v))
-				
-			elif isinstance(v, list):
-				for node in v:
-					#variables = variables + get_variable_names(v)
-					variables.update(get_variable_names(v))
-				
-	elif isinstance(ast, list):
-		for node in ast:
-			#variables = variables + get_variable_names(node)
-			variables.update(get_variable_names(node))
-	
-	return variables
-
-
-def get_variables(ast):
-	
-	variables = []
-	
-	if isinstance(ast, dict):
-		for k, v in ast.iteritems():
-			
-			if k == "kind" and v == "call":
-				continue;
-				
-			elif k == "kind" and v == "variable":
-				variables.append(ast)
-				#variables.add(ast)
-				
-			elif isinstance(v, dict):
-				variables = variables + get_variables(v)
-				#variables.update(get_variables(v))
-				
-			elif isinstance(v, list):
-				for node in v:
-					variables = variables + get_variables(v)
-					#variables.update(get_variables(v))
-				
-	elif isinstance(ast, list):
-		for node in ast:
-			variables = variables + get_variables(node)
-			#variables.update(get_variables(node))
-	
-	return variables
-
-
-def get_calls(ast):
-	
-	#print(green(str(ast)))
-	#print("")
-	
-	calls = []
-	
-	if isinstance(ast, dict):
-		for k, v in ast.iteritems():
-			if k == "kind" and v == "call":
-				calls.append(ast)
-				
-			elif isinstance(v, dict):
-				calls = calls + get_calls(v)
-				
-			elif isinstance(v, list):
-				for node in v:
-					calls = calls + get_calls(v)
-				
-	elif isinstance(ast, list):
-		for node in ast:
-			calls = calls + get_calls(node)
-			
-	#print(yellow(str(calls)))
-	#print("")
-	
-	return calls
-
-
-
-def get_variables_as_dict(ast):
-	
-	variables = {}
-	
-	for k, v in ast.iteritems():
-		if k == "kind" and v == "variable":
-			variables[ast['name']] = False
-			
-		elif isinstance(v, dict):
-			variables.update(get_variables(v))
-			
-		elif isinstance(v, list):
-			for node in v:
-				variables.update(get_variables(node))
-		
-	return variables
-
-
-
-def print_file(filePath):
-	
-	try:
-		print("\n" + filePath)
-		with open(filePath, 'r') as fp:
-			ln = 1
-			for line in fp:
-				print(" {}: {}".format(str(ln).rjust(2), line.strip('\n')))
-				ln = ln + 1
-			
-	except IOError as e:
-		print(e)
-		#if e.errno == errno.ENOENT:
-			#print("No such filePath or directory: %s" % e)
-		#else:
-			#print(e)
-
-
 

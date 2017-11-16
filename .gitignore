@@ -1,4 +1,6 @@
 
+# custom ignores
+*.bak
 *.exe
 .gdb_history
 *swp
