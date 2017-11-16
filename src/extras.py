@@ -33,7 +33,7 @@ def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
 
 
 def find_assign(ast, variable):
-	node = None
+	node = None	
 	
 	#for k, v in sorted(ast.iteritems(), reverse=True):
 	for k, v in ast.iteritems():
@@ -47,7 +47,7 @@ def find_assign(ast, variable):
 			return find_assign(v, variable)
 			
 		elif isinstance(v, list):
-			for element in v:
+			for element in reversed(v):
 				node = find_assign(element, variable)
 				if node is not None:
 					break
@@ -143,7 +143,11 @@ def get_variables(ast):
 	
 	if isinstance(ast, dict):
 		for k, v in ast.iteritems():
-			if k == "kind" and v == "variable":
+			
+			if k == "kind" and v == "call":
+				continue;
+				
+			elif k == "kind" and v == "variable":
 				variables.append(ast)
 				#variables.add(ast)
 				
@@ -166,8 +170,8 @@ def get_variables(ast):
 
 def get_calls(ast):
 	
-	print(green(str(ast)))
-	print("")
+	#print(green(str(ast)))
+	#print("")
 	
 	calls = []
 	
@@ -187,8 +191,8 @@ def get_calls(ast):
 		for node in ast:
 			calls = calls + get_calls(node)
 			
-	print(yellow(str(calls)))
-	print("")
+	#print(yellow(str(calls)))
+	#print("")
 	
 	return calls
 

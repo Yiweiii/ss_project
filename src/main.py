@@ -108,7 +108,6 @@ def main():
 			
 			print(vulnerabilities)
 	
-	
 	print("\nDone.\n")
 	
 	

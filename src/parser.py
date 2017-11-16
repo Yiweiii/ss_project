@@ -28,7 +28,7 @@ def get_patterns(filePath):
 					
 					patterns.append(pattern)
 					
-					print(pattern)
+					#print(pattern)
 					
 				else:
 					# cannot read 5 more lines
@@ -89,104 +89,110 @@ def path_from_sink_to_entry(ast, sinks = None, patterns = None):
 	if sinks is None:
 		possiblePatterns = set()
 		
-		functions = get_functions(ast)
-		sinks = {}
+		functions = get_calls(ast)
+		sinks = []
 		
 		for pattern in patterns:
-			for func, args in functions.iteritems():
-				if func in pattern.sensitive_sinks:
-					sinks[func] = args
+			for func in functions:
+				if func['what']['name'] in pattern.sensitive_sinks:
+					sinks.append(func)
 					possiblePatterns.add(pattern)
 	
 	
 	path = []
 	
-	for func, args in sinks.iteritems():
-		path.append(func)
+	for sink in sinks:
+		#path[sink['what']['name']] = [sink]
+		path = [sink['what']['name']]
 		
-		for arg in args:
-			stack = list(args)
+		#for arg in sink['arguments']:
+		
+		stack = list(sink['arguments'])
+		visited = []
+		
+		while stack:
 			
-			while stack:
+			print(blue(str(path)))
+			for x in stack:
+				print(">> "+str(x)+" <<")
+			print("")
+			
+			node = stack.pop()
+			if node['kind'] == "variable":
 				
-				print(blue(str(path)))
-				for x in stack:
-					print(">> "+str(x)+" <<")
-				print("")
+				for pattern in patterns:
+					if node['name'] in pattern.entry_points:
+						path.append(node['name'])
+						return path
 				
-				node = stack.pop()
-				if node['kind'] == "variable":
+				assign = find_assign(ast, node['name'])
+				
+				if assign is not None and assign not in visited:
+					visited.append(assign)
 					path.append(node['name'])
+					stack.append(assign['right'])
+					#path.append(node['name'])
+					#right = assign['right']
 					
-					for pattern in patterns:
-						if node['name'] in pattern.entry_points:
-							return path
-					
-					#print("- " + node['name'])
-					assign = find_assign(ast, node['name'])
-					
-					if assign is not None:
-						stack.append(assign['right'])
-						#path.append(node['name'])
-						#right = assign['right']
+					#if right['kind'] == "call" or right['kind'] == "variable":
+						##path.append(assign['right']['name'])
+						#pass
 						
-						#if right['kind'] == "call" or right['kind'] == "variable":
-							##path.append(assign['right']['name'])
-							#pass
-							
-						#else:
-							#for var in get_variables(right):
-								#if var not in stack:
-									#stack.append(var)
+					#else:
+						#for var in get_variables(right):
+							#if var not in stack:
+								#stack.append(var)
+				
+			elif node['kind'] == "call":
+				print(red("FIXME: function calls not implemented"))
+				
+				path.append(node['what']['name'])
+				
+				# check if sanitization function
+				for pattern in patterns:
+					if node['what']['name'] in pattern.escapes:
+						continue
+				
+				for arg in node['arguments']:
+					if arg['kind'] == "variable" or arg['kind'] == "call":
+						#arguments.append(arg['name'])
+						stack.append(arg)
+				
+				
+			elif node['kind'] == "if":
+				print(red("FIXME: function calls not implemented"))			
+				
+			elif node['kind'] == "while":
+				print(red("FIXME: function calls not implemented"))
+				
+			#elif node['kind'] == "encapsed":
+			else:
+				stack = stack + get_calls(node) + get_variables(node)
+				
+				#functions = get_calls(node)
+				#variables = get_variables(node)
+				#if functions:
+					#for func in functions:
+						#if func not in stack:
+							#stack.append(func)
 					
-				elif node['kind'] == "call":
-					print("FIXME: function calls not implemented")
-					
-					path.append(node['what']['name'])
-					
-					# check if sanitization function
-					for pattern in patterns:
-						if node['what']['name'] in pattern.escapes:
-							continue
-					
-					for arg in node['arguments']:
-						if arg['kind'] == "variable" or arg['kind'] == "call":
-							#arguments.append(arg['name'])
-							stack.append(arg)
-					
-					
-				elif node['kind'] == "if":
-					print("FIXME: function calls not implemented")				
-					
-				elif node['kind'] == "while":
-					print("FIXME: function calls not implemented")
-					
-				#elif node['kind'] == "encapsed":
-				else:
-					functions = get_calls(node)
-					
-					if functions:
-						for func in functions:
-							if func not in stack:
-								stack.append(func)
+				#else:
+					#for var in get_variables(node):
+						#if var not in stack:
+							#stack.append(var)
+				
+			#elif isinstance(node, dict):
+				#for k, v in node.iteritems():
+					#if isinstance(v, dict):
+						#stack.append(v)
 						
-					else:
-						for var in get_variables(node):
-							if var not in stack:
-								stack.append(var)
-					
-				#elif isinstance(node, dict):
-					#for k, v in node.iteritems():
-						#if isinstance(v, dict):
-							#stack.append(v)
-							
-						#elif isinstance(node, list):
-							#for n in node:
-								#stack.append(n)
-					
-				#elif isinstance(node, list):
-					#for n in node:
-						#stack.append(n)
+					#elif isinstance(node, list):
+						#for n in node:
+							#stack.append(n)
+				
+			#elif isinstance(node, list):
+				#for n in node:
+					#stack.append(n)
 	
 	return path
 
@@ -223,8 +229,9 @@ def check_file(filePath, patterns = None):
 	
 	
 	#FIXME find path of assignments from sink to variable
-	path = path_from_sink_to_entry(ast, sinks, patterns)
-	print(italic("path: " + str(path)))
+	#path = path_from_sink_to_entry(ast, sinks, patterns)
+	path = path_from_sink_to_entry(ast, None, patterns)
+	print(italic(underline("path: " + str(path))))
 	
 	newPatterns = []
 	for pattern in possiblePatterns:
