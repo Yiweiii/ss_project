@@ -1,4 +1,5 @@
 
+
 class Color:
 	PURPLE = '\033[95m'
 	BLUE = '\033[94m'
@@ -35,6 +36,19 @@ def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
 
 
 
+def print_stack(stack, name = ""):
+	
+	if name is None:
+		for n in stack:
+			print(n)
+		
+	else:
+		print(name)
+		for n in stack:
+			print("\t" + n)
+
+
+
 def print_file(filePath):
 	
 	try:
@@ -54,6 +68,34 @@ def print_file(filePath):
 
 
 
+
+################################### deprecated ###################################
+
+
+def get_variable_names(ast):
+	
+	variables = set()
+	
+	if isinstance(ast, dict):
+		for k, v in ast.iteritems():
+			if k == "kind" and v == "variable":
+				variables.add(ast['name'])
+				
+			elif isinstance(v, dict):
+				#variables = variables + get_variable_names(v)
+				variables.update(get_variable_names(v))
+				
+			elif isinstance(v, list):
+				for node in v:
+					#variables = variables + get_variable_names(v)
+					variables.update(get_variable_names(v))
+				
+	elif isinstance(ast, list):
+		for node in ast:
+			#variables = variables + get_variable_names(node)
+			variables.update(get_variable_names(node))
+	
+	return variables
 
 
 
@@ -109,4 +151,60 @@ def propagate_taint(ast, variables):
 					return True
 	
 	return False
+
+
+
+def get_functions(ast):
+	
+	functions = {}
+	
+	for k, v in ast.iteritems():
+		if k == "kind" and v == "call":
+			arguments = []
+			for arg in ast['arguments']:
+				if arg['kind'] == "variable":
+					#arguments.append(arg['name'])
+					arguments.append(arg)
+			
+			functions[ast['what']['name']] = arguments
+			
+			
+		elif k == "kind" and v == "echo":
+			arguments = []
+			for arg in ast['arguments']:
+				if arg['kind'] == "variable":
+					#arguments.append(arg['name'])
+					arguments.append(arg)
+			
+			functions['echo'] = arguments
+			
+			
+		elif isinstance(v, dict):
+			functions.update(get_functions(v))
+			
+			
+		elif isinstance(v, list):
+			for node in v:
+				functions.update(get_functions(node))
+		
+	return functions
+
+
+
+def get_variables_as_dict(ast):
+	
+	variables = {}
+	
+	for k, v in ast.iteritems():
+		if k == "kind" and v == "variable":
+			variables[ast['name']] = False
+			
+		elif isinstance(v, dict):
+			variables.update(get_variables(v))
+			
+		elif isinstance(v, list):
+			for node in v:
+				variables.update(get_variables(node))
+		
+	return variables
 

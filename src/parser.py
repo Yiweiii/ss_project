@@ -9,8 +9,8 @@ from getters import *
 from extras import *
 
 
-
-def get_patterns(filePath):
+# returns a list of vulnerability patterns
+def get_patterns(filePath, display = False):
 	
 	try:
 		print(bold("\n<- importing vulnerability patterns from '" + filePath + "'"))
@@ -29,7 +29,8 @@ def get_patterns(filePath):
 					
 					patterns.append(pattern)
 					
-					#print(pattern)
+					if display:
+						print(pattern)
 					
 				else:
 					# cannot read 5 more lines
@@ -43,7 +44,9 @@ def get_patterns(filePath):
 		sys.exit(1)
 
 
-	
+
+# returns the path from a node (idealy a function node) to an unsanitized input
+# if one does not exist, returns null (None)
 def path_from_sink_to_entry(ast, node = None, patterns = None):
 	
 	if patterns is None:
@@ -68,8 +71,12 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 		
 	elif node['kind'] == "echo":
-		#FIXME
-		print(red("FIXME: echo calls not implemented"))
+		#TODO maybe add more functions like echo
+		for arg in node['arguments']:
+			path = path_from_sink_to_entry(ast, arg, patterns)
+			if path is not None:
+				path.append(node['kind'])
+				return path
 		
 		
 	elif node['kind'] == "offsetlookup":
@@ -96,12 +103,12 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 	elif node['kind'] == "if":
 		#FIXME
-		print(red("FIXME: function calls not implemented"))			
+		print(red("FIXME: if blocks not implemented"))			
 		
 		
 	elif node['kind'] == "while":
 		#FIXME
-		print(red("FIXME: function calls not implemented"))
+		print(red("FIXME: while blocks not implemented"))
 		
 		
 	else:
@@ -116,7 +123,7 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 
 
 
-def check_file(filePath, patterns = None):
+def check_file(filePath, patterns = None, displayPath = True):
 	
 	if patterns is None:
 		patterns = get_patterns("patterns.txt")
@@ -142,7 +149,12 @@ def check_file(filePath, patterns = None):
 	for pattern in patterns:
 		for func in functions:
 			if func not in sinks:
-				if func['what']['name'] in pattern.sensitive_sinks:
+				if func['kind'] == "call":
+					name = func['what']['name']
+				else:
+					name = func['kind']
+					
+				if name in pattern.sensitive_sinks:
 					sinks.append(func)
 					newPatterns.add(pattern)
 				
@@ -154,9 +166,11 @@ def check_file(filePath, patterns = None):
 	# find path from sinks to a possible entry point
 	for sink in sinks:
 		path = path_from_sink_to_entry(ast, sink, patterns)
-		print(italic("path: " + str(path)))
 		if path is not None:
 			break
+	
+	if displayPath:
+		print("path: " + str(path))
 	
 	
 	# compute the result
@@ -175,16 +189,9 @@ def check_file(filePath, patterns = None):
 							+ "\nSensitive Sink: " + path[0] \
 							+ "\n"
 					
-					#FIXME return all matching
+					#TODO return all matching
 					return red(result)
 	
-	
 	return result
-
-
-
-
-
-
 
 
