@@ -103,7 +103,7 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 	elif node['kind'] == "if":
 		#FIXME
-		print(red("FIXME: if blocks not implemented"))			
+		print(red("FIXME: if blocks not implemented"))
 		
 		
 	elif node['kind'] == "while":
@@ -118,7 +118,7 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 			if path is not None:
 				return path
 	
-	
+	# default return null
 	return None
 
 
@@ -183,7 +183,7 @@ def check_file(filePath, patterns = None, displayPath = True):
 			for pattern in patterns:
 				if element not in pattern.escapes:
 					
-					result += "\nVulnerability: " + pattern.name \
+					result += "Vulnerability: " + pattern.name \
 							+ "\nEntry point: " + path[-1] \
 							+ "\nSanitization: None" \
 							+ "\nSensitive Sink: " + path[0] \

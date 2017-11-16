@@ -2,9 +2,9 @@
 
 # returns right most assignment node (the closest to the variable use) of the given variable
 def get_assign(ast, variable):
+	
 	node = None	
 	
-	#for k, v in sorted(ast.iteritems(), reverse=True):
 	for k, v in ast.iteritems():
 		if k == "kind" and v == "assign":			
 			left = ast['left']
@@ -13,11 +13,13 @@ def get_assign(ast, variable):
 				return ast	
 			
 		elif isinstance(v, dict):
-			return get_assign(v, variable)
+			node = get_assign(v, variable)
+			if node is not None:
+				break
 			
 		elif isinstance(v, list):
-			for element in reversed(v):
-				node = get_assign(element, variable)
+			for n in reversed(v):
+				node = get_assign(n, variable)
 				if node is not None:
 					break
 		
