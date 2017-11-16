@@ -43,19 +43,8 @@ def get_patterns(filePath):
 		sys.exit(1)
 
 
-
-
-
-	#print(blue(str(path)))
-	#for x in stack:
-		#print(">> "+str(x)+" <<")
-	#print("")
-	
 	
 def path_from_sink_to_entry(ast, node = None, patterns = None):
-	
-	print(blue(">>> " + str(node) + " <<<\n"))
-
 	
 	if patterns is None:
 		patterns = get_patterns("patterns.txt")
@@ -66,28 +55,34 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 	
 	if node['kind'] == "call":
 		
-		print(purple("F -- " + node['what']['name'] + " --\n"))
 		# check if function is a sanitization function
 		for pattern in patterns:
 			if node['what']['name'] in pattern.escapes:
-				print(green("ESC -- " + node['what']['name'] + " --\n"))
 				return None
 		
 		for arg in node['arguments']:
 			path = path_from_sink_to_entry(ast, arg, patterns)
-			print(cyan("F -- " + str(path) + " --\n"))
 			if path is not None:
-				return path.append(node['what']['name'])
+				path.append(node['what']['name'])
+				return path
 		
 		
-	elif node['kind'] == "variable":
-		print(yellow("VAR -- " + node['name'] + " --\n"))
+	elif node['kind'] == "echo":
+		#FIXME
+		print(red("FIXME: echo calls not implemented"))
+		
+		
+	elif node['kind'] == "offsetlookup":
 		
 		# check if variable is an entry point
 		for pattern in patterns:
-			if node['name'] in pattern.entry_points:
-				print(yellow("E -- " + node['name'] + " --\n"))
-				return [node['name']]
+			if node['what']['name'] in pattern.entry_points:
+				entry = node['what']['name'] + "['" + node['offset']['value'] + "']"
+				
+				return [entry]
+		
+		
+	elif node['kind'] == "variable":
 		
 		assign = get_assign(ast, node['name'])
 		
@@ -95,29 +90,25 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 			path = path_from_sink_to_entry(ast, assign['right'], patterns)
 			
 			if path is not None:
-				print(cyan("A -- " + str(path) + " --\n"))
-				return path.append(node['name'])
-			else:
-				return None
+				path.append(node['name'])
+				return path
+		
 		
 	elif node['kind'] == "if":
+		#FIXME
 		print(red("FIXME: function calls not implemented"))			
 		
 		
 	elif node['kind'] == "while":
+		#FIXME
 		print(red("FIXME: function calls not implemented"))
 		
 		
 	else:
 		nodesOfInterest = get_calls(node) + get_variables(node)
-		for x in nodesOfInterest:
-			print(red("R -- " + str(x) + " --"))
-		print("")
-		
 		for n in nodesOfInterest:
 			path = path_from_sink_to_entry(ast, n, patterns)
 			if path is not None:
-				print(cyan("R -- " + str(path) + " --\n"))
 				return path
 	
 	
@@ -150,22 +141,25 @@ def check_file(filePath, patterns = None):
 	newPatterns = set()
 	for pattern in patterns:
 		for func in functions:
-			if func['what']['name'] in pattern.sensitive_sinks:
-				sinks.append(func)
-				newPatterns.add(pattern)
+			if func not in sinks:
+				if func['what']['name'] in pattern.sensitive_sinks:
+					sinks.append(func)
+					newPatterns.add(pattern)
 				
-	patterns = newPatterns
+	patterns = list(newPatterns)
+	
+	
+	path = None
 	
 	# find path from sinks to a possible entry point
 	for sink in sinks:
 		path = path_from_sink_to_entry(ast, sink, patterns)
-		if path:
-			print(italic(cyan("path: " + str(path))))
+		print(italic("path: " + str(path)))
+		if path is not None:
 			break
 	
 	
 	# compute the result
-	
 	if path is None:
 		result = green("Vulnerability: None")
 		
