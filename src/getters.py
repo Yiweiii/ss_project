@@ -11,7 +11,7 @@ def get_assignment(ast, variable):
 			
 			varsOnRight = get_variables(ast['right'])
 			
-			print([x['name'] for x in varsOnRight])
+			#print([x['name'] for x in varsOnRight])
 			
 			if variable not in varsOnRight:
 				if left['id'] > variable['id']:

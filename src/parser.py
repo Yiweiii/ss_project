@@ -113,13 +113,13 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 	elif node['kind'] == "variable":
 		
-		print(cyan("V -- " + str(node['name']) + " --"))
+		#print(cyan("V -- " + str(node['name']) + " --"))
 		
 		#FIXME get_assignment fails slice07; get_assign fails slice11
-		#assign = get_assign(ast, node['name'])
-		assign = get_assignment(ast, node)
+		assign = get_assign(ast, node['name'])
+		#assign = get_assignment(ast, node)
 		
-		print(yellow("A -- " + str(assign) + " --\n"))
+		#print(yellow("A -- " + str(assign) + " --\n"))
 		
 		if assign is not None:
 			path = path_from_sink_to_entry(ast, assign['right'], patterns)
@@ -204,7 +204,7 @@ def check_file(filePath, patterns = None, displayPath = True):
 	
 	# compute the result
 	if path is None:
-		result = green("Vulnerability: None")
+		result = green("Vulnerability: None\n")
 		
 	else:
 		result = ""
@@ -212,14 +212,19 @@ def check_file(filePath, patterns = None, displayPath = True):
 			for pattern in patterns:
 				if element not in pattern.escapes:
 					
-					result += "Vulnerability: " + pattern.name \
-							+ "\nEntry point: " + path[-1] \
-							+ "\nSanitization: None" \
-							+ "\nSensitive Sink: " + path[0] \
-							+ "\n"
+					result += red("Vulnerability:\t") + pattern.name \
+							+ red("\nEntry point:\t") + path[0] \
+							+ red("\nSensitive Sink:\t") + path[-1]
+						
+					if displayPath:
+						result += red("\npath:\n")						
+						for n in path:
+							result += italic(n + "\n")
+					else:
+						result += "\n"
 					
-					#TODO return all matching
-					return red(result)
+					#TODO maybe return all matching
+					return result
 	
 	return result
 
