@@ -9,6 +9,28 @@ from getters import *
 from extras import *
 
 
+
+def id_nodes(ast):
+	id = 0
+	stack = [ast]
+	
+	while stack:
+		node = stack.pop()
+		node['id'] = id
+		id += 1
+		
+		for k, v in node.iteritems():
+			if isinstance(v, dict):
+				stack.append(v)
+				
+			elif isinstance(v, list):
+				for n in v:
+					stack.append(n)
+	
+	return ast
+
+
+
 # returns a list of vulnerability patterns
 def get_patterns(filePath, display = False):
 	
@@ -91,7 +113,13 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 	elif node['kind'] == "variable":
 		
-		assign = get_assign(ast, node['name'])
+		print(cyan("V -- " + str(node['name']) + " --"))
+		
+		#FIXME get_assignment fails slice07; get_assign fails slice11
+		#assign = get_assign(ast, node['name'])
+		assign = get_assignment(ast, node)
+		
+		print(yellow("A -- " + str(assign) + " --\n"))
 		
 		if assign is not None:
 			path = path_from_sink_to_entry(ast, assign['right'], patterns)
@@ -102,13 +130,11 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 		
 	elif node['kind'] == "if":
-		#FIXME
-		print(red("FIXME: if blocks not implemented"))
+		print(red("if blocks are not read here"))
 		
 		
 	elif node['kind'] == "while":
-		#FIXME
-		print(red("FIXME: while blocks not implemented"))
+		print(red("while blocks are not read here"))
 		
 		
 	else:
@@ -117,6 +143,7 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 			path = path_from_sink_to_entry(ast, n, patterns)
 			if path is not None:
 				return path
+	
 	
 	# default return null
 	return None
@@ -161,6 +188,8 @@ def check_file(filePath, patterns = None, displayPath = True):
 	patterns = list(newPatterns)
 	
 	
+	ast = id_nodes(ast)
+	
 	path = None
 	
 	# find path from sinks to a possible entry point
@@ -170,7 +199,7 @@ def check_file(filePath, patterns = None, displayPath = True):
 			break
 	
 	if displayPath:
-		print("path: " + str(path))
+		print(path)
 	
 	
 	# compute the result

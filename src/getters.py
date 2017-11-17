@@ -1,5 +1,37 @@
 
 
+#FIXME
+def get_assignment(ast, variable):
+	
+	node = None	
+	
+	for k, v in ast.iteritems():
+		if k == "kind" and v == "assign":			
+			left = ast['left']
+			
+			varsOnRight = get_variables(ast['right'])
+			
+			print([x['name'] for x in varsOnRight])
+			
+			if variable not in varsOnRight:
+				if left['id'] > variable['id']:
+					return ast	
+			
+		elif isinstance(v, dict):
+			node = get_assignment(v, variable)
+			#if node is not None:
+				#break
+			
+		elif isinstance(v, list):
+			for n in reversed(v): # right to left
+				node = get_assignment(n, variable)
+				if node is not None:
+					break
+		
+	return node
+
+
+
 # returns right most assignment node (the closest to the variable use) of the given variable
 def get_assign(ast, variable):
 	
