@@ -96,16 +96,23 @@ def main():
 		n = n + 1
 	
 	
+	patterns = get_patterns(flags["-p"])
+	
 	if flags["-f"]:
-		print(check_file(flags["-s"] + flags["-f"]))
-		
+		try:
+			print(check_file(flags["-s"] + flags["-f"], patterns, flags["-d"]))
+			
+		except RuntimeError as e:
+			print(purple("Failed to parse file."))
+			#print(e)
+
+	
 	if flags["-i"]:
 		shell(flags["-s"])
 		
 	
 	
 	if not ( flags["-f"] or flags["-i"] ):
-		patterns = get_patterns(flags["-p"])
 		
 		for f in get_available_files(flags["-s"]):
 			

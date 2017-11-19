@@ -112,15 +112,7 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 		
 	elif node['kind'] == "variable":
-		
-		#print(cyan("V -- " + str(node['name']) + " --"))
-		
-		#FIXME get_assignment fails slice07; get_assign fails slice11
-		assign = get_assign(ast, node['name'])
-		#assign = get_assignment(ast, node)
-		
-		#print(yellow("A -- " + str(assign) + " --\n"))
-		
+		assign = get_assignment(ast, node)
 		if assign is not None:
 			path = path_from_sink_to_entry(ast, assign['right'], patterns)
 			
@@ -161,7 +153,6 @@ def check_file(filePath, patterns = None, displayPath = True):
 		print(bold("\n-> analysing '" + filePath + "'"))
 		with open(filePath) as fp:
 			ast = json.load(fp)
-			#pprint(ast)
 			
 	except IOError as e:
 		print("Could not analyse file.")
@@ -188,8 +179,8 @@ def check_file(filePath, patterns = None, displayPath = True):
 	patterns = list(newPatterns)
 	
 	
-	ast = id_nodes(ast)
-	
+	# id the AST nodes to distinguish x=x assignments
+	ast = id_nodes(ast)	
 	path = None
 	
 	# find path from sinks to a possible entry point
