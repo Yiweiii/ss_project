@@ -198,9 +198,6 @@ def check_file(filePath, patterns = None, displayPath = True):
 		if path is not None:
 			break
 	
-	if displayPath:
-		print(path)
-	
 	
 	# compute the result
 	if path is None:
@@ -217,9 +214,10 @@ def check_file(filePath, patterns = None, displayPath = True):
 							+ red("\nSensitive Sink:\t") + path[-1]
 						
 					if displayPath:
-						result += red("\npath:\n")						
-						for n in path:
-							result += italic(n + "\n")
+						result += red("\npath: ") + italic(str(path)) + "\n"			
+						#result += red("\npath:\n")						
+						#for n in path:
+							#result += italic(n + "\n")
 					else:
 						result += "\n"
 					
