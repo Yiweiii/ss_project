@@ -2,7 +2,7 @@
 
 
 ## Usage
-_Note:_ slices should be in .json format and placed in the src/slices/ folder
+*__Note:__* slices should be in .json format and placed in the src/slices/ folder
 
     cd src/
     python main.py
