@@ -2,16 +2,19 @@
 
 
 ## Usage
-*__Note:__* slices should be in *.json* format and placed in the *src/slices/* folder
+*__Note:__* slices must be in *.json* format and placed in the *src/slices/* folder
+
+
+To analyse all the slices:
 
     cd src/
     python main.py
-	
-or
-	
+or	
 	make run
 	
-
+To analyse a specific file:
+	cd src/
+    python main.py -f _<filename>_
 
 ## PHP parser
 https://glayzzle.com/php-parser/
