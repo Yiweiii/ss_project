@@ -25,7 +25,7 @@ or
 To analyse a specific file:
 
 	cd src/
-	python main.py -f _<filename>_
+	python main.py -f <filename>
 
 ## PHP parser
 https://glayzzle.com/php-parser/
