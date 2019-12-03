@@ -1,0 +1,1 @@
+{"kind":"program","children":[{"kind":"echo","shortForm":false,"expressions":[{"kind":"offsetlookup","what":{"kind":"variable","name":"_POST","byref":false,"curly":false},"offset":{"kind":"string","value":"username","raw":"'username'","unicode":false,"isDoubleQuote":false}}]}],"errors":[],"comments":[]}
