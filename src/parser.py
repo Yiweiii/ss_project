@@ -64,7 +64,7 @@ def path_from_sink_to_entry(ast, node, patterns):
 				
 	elif node['kind'] == "echo":
 		#TODO maybe add more functions like echo
-		for arg in node['arguments']:
+		for arg in node['expressions']:
 			path = path_from_sink_to_entry(ast, arg, patterns)
 			if path is not None:
 				path.append(node['kind'])
