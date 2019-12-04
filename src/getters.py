@@ -48,7 +48,7 @@ def get_variables(node):
 	if isinstance(node, dict):
 		for k, v in node.iteritems():
 			if k == "kind" and v == "call":
-				continue;
+				continue
 				
 			elif k == "kind" and v == "variable":
 				variables.append(node)
@@ -69,30 +69,31 @@ def get_variables(node):
 
 
 # returns a list of function nodes under a given node
-def get_calls(ast):
+def get_functions(ast):
 	
-	calls = []
+	functions = []
 	
 	if isinstance(ast, dict):
-		for k, v in ast.iteritems():
-			if k == "kind" and v == "call":
-				calls.append(ast)
+		for key, value in ast.iteritems():
+			if key == "kind" and value == "call":
+				functions.append(ast)
 				
-			elif k == "kind" and v == "echo":
-				calls.append(ast)
+			elif key == "kind" and value == "echo":
+				functions.append(ast)
 				
-			elif isinstance(v, dict):
-				calls = calls + get_calls(v)
+			elif isinstance(value, dict):
+				functions = functions + get_functions(value)
 				
-			elif isinstance(v, list):
-				for node in v:
-					calls = calls + get_calls(v)
+			elif isinstance(value, list):
+				for node in value:
+					functions = functions + get_functions(value)
 				
 	elif isinstance(ast, list):
 		for node in ast:
-			calls = calls + get_calls(node)
+			functions = functions + get_functions(node)
 	
-	return calls
+	
+	return functions
 
 
 

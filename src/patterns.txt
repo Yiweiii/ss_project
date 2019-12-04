@@ -6,7 +6,7 @@ mysql_query,mysql_unbuffered_query,mysql_db_query,mssql_query
 
 SQL injection (PostgreSQL)
 $_GET,$_POST,$_COOKIE,$_REQUEST
-pg_escape_string,pg_escape_bytea, preg_replace, preg_replace_callback
+pg_escape_string,pg_escape_bytea,preg_replace, preg_replace_callback
 pg_query,pg_send_query
 
 SQL injection (SQLite)

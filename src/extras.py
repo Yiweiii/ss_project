@@ -1,5 +1,3 @@
-
-
 class Color:
 	PURPLE = '\033[95m'
 	BLUE = '\033[94m'
@@ -25,7 +23,6 @@ def underline(string): return Color.UNDERLINE + string + Color.END
 def bold(string): return Color.BOLD + string + Color.END
 
 
-
 def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
 	
 	print(italic("Variables: ") + str(variables))
@@ -33,7 +30,6 @@ def print_program_check(variables, tainted, functions, sinks, possiblePatterns):
 	print(italic("Functions: ") + str(functions))
 	print(red(italic("Sinks: ") + red(str(sinks))))
 	print(italic(yellow("Possible patterns of vulnerability: ")) + str(possiblePatterns))
-
 
 
 def print_stack(stack, name = ""):
@@ -46,8 +42,6 @@ def print_stack(stack, name = ""):
 		print(name)
 		for n in stack:
 			print("\t" + n)
-
-
 
 def print_file(filePath):
 	
@@ -72,139 +66,139 @@ def print_file(filePath):
 ################################### deprecated ###################################
 
 
-def get_variable_names(ast):
+# def get_variable_names(ast):
 	
-	variables = set()
+# 	variables = set()
 	
-	if isinstance(ast, dict):
-		for k, v in ast.iteritems():
-			if k == "kind" and v == "variable":
-				variables.add(ast['name'])
+# 	if isinstance(ast, dict):
+# 		for k, v in ast.iteritems():
+# 			if k == "kind" and v == "variable":
+# 				variables.add(ast['name'])
 				
-			elif isinstance(v, dict):
-				#variables = variables + get_variable_names(v)
-				variables.update(get_variable_names(v))
+# 			elif isinstance(v, dict):
+# 				#variables = variables + get_variable_names(v)
+# 				variables.update(get_variable_names(v))
 				
-			elif isinstance(v, list):
-				for node in v:
-					#variables = variables + get_variable_names(v)
-					variables.update(get_variable_names(v))
+# 			elif isinstance(v, list):
+# 				for node in v:
+# 					#variables = variables + get_variable_names(v)
+# 					variables.update(get_variable_names(v))
 				
-	elif isinstance(ast, list):
-		for node in ast:
-			#variables = variables + get_variable_names(node)
-			variables.update(get_variable_names(node))
+# 	elif isinstance(ast, list):
+# 		for node in ast:
+# 			#variables = variables + get_variable_names(node)
+# 			variables.update(get_variable_names(node))
 	
-	return variables
+# 	return variables
 
 
 
-def propagate_taint(ast, variables):
+# def propagate_taint(ast, variables):
 	
-	# assume we areceive an ast
-	for k, v in ast.iteritems():
-		if k == u"kind" and v == u"assign":
+# 	# assume we areceive an ast
+# 	for k, v in ast.iteritems():
+# 		if k == u"kind" and v == u"assign":
 			
-			left = ast['left']
-			right = ast['right']
+# 			left = ast['left']
+# 			right = ast['right']
 			
-			if left['kind'] == "variable":
+# 			if left['kind'] == "variable":
 				
-				if right['kind'] == "variable":
+# 				if right['kind'] == "variable":
 					
-					if right['name'] in variables:
-						if right['name']:
-							variables[left['name']] = True
-							return True
+# 					if right['name'] in variables:
+# 						if right['name']:
+# 							variables[left['name']] = True
+# 							return True
 						
-					else:
-						print(red("FAILED TO MATCH VARIABLES."))
-						sys.exit(43)
+# 					else:
+# 						print(red("FAILED TO MATCH VARIABLES."))
+# 						sys.exit(43)
 				
-				# if right is not directly a variable dfs the branch to find one
-				else:
-					stack = [right]
-					while stack:
-						node = stack.pop()
-						for k, v in node.iteritems():
-							if node['kind'] == "variable":
-								if node['name'] in variables:
-									if node['name']:
-										variables[left['name']] = True
-										#return True
+# 				# if right is not directly a variable dfs the branch to find one
+# 				else:
+# 					stack = [right]
+# 					while stack:
+# 						node = stack.pop()
+# 						for k, v in node.iteritems():
+# 							if node['kind'] == "variable":
+# 								if node['name'] in variables:
+# 									if node['name']:
+# 										variables[left['name']] = True
+# 										#return True
 								
-							elif isinstance(v, dict):
-								stack.append(v)
+# 							elif isinstance(v, dict):
+# 								stack.append(v)
 								
-							elif isinstance(v, list):
-								for node in v:
-									stack.append(node)
+# 							elif isinstance(v, list):
+# 								for node in v:
+# 									stack.append(node)
 			
-		# else look for other assignments
-		elif isinstance(v, dict):
-			if propagate_taint(v, variables):
-				return True
+# 		# else look for other assignments
+# 		elif isinstance(v, dict):
+# 			if propagate_taint(v, variables):
+# 				return True
 			
-		elif isinstance(v, list):
-			for node in v:
-				if propagate_taint(node, variables):
-					return True
+# 		elif isinstance(v, list):
+# 			for node in v:
+# 				if propagate_taint(node, variables):
+# 					return True
 	
-	return False
+# 	return False
 
 
 
-def get_functions(ast):
+# def get_functions(ast):
 	
-	functions = {}
+# 	functions = {}
 	
-	for k, v in ast.iteritems():
-		if k == "kind" and v == "call":
-			arguments = []
-			for arg in ast['arguments']:
-				if arg['kind'] == "variable":
-					#arguments.append(arg['name'])
-					arguments.append(arg)
+# 	for k, v in ast.iteritems():
+# 		if k == "kind" and v == "call":
+# 			arguments = []
+# 			for arg in ast['arguments']:
+# 				if arg['kind'] == "variable":
+# 					#arguments.append(arg['name'])
+# 					arguments.append(arg)
 			
-			functions[ast['what']['name']] = arguments
-			
-			
-		elif k == "kind" and v == "echo":
-			arguments = []
-			for arg in ast['arguments']:
-				if arg['kind'] == "variable":
-					#arguments.append(arg['name'])
-					arguments.append(arg)
-			
-			functions['echo'] = arguments
+# 			functions[ast['what']['name']] = arguments
 			
 			
-		elif isinstance(v, dict):
-			functions.update(get_functions(v))
+# 		elif k == "kind" and v == "echo":
+# 			arguments = []
+# 			for arg in ast['arguments']:
+# 				if arg['kind'] == "variable":
+# 					#arguments.append(arg['name'])
+# 					arguments.append(arg)
+			
+# 			functions['echo'] = arguments
 			
 			
-		elif isinstance(v, list):
-			for node in v:
-				functions.update(get_functions(node))
+# 		elif isinstance(v, dict):
+# 			functions.update(get_functions(v))
+			
+			
+# 		elif isinstance(v, list):
+# 			for node in v:
+# 				functions.update(get_functions(node))
 		
-	return functions
+# 	return functions
 
 
 
-def get_variables_as_dict(ast):
+# def get_variables_as_dict(ast):
 	
-	variables = {}
+# 	variables = {}
 	
-	for k, v in ast.iteritems():
-		if k == "kind" and v == "variable":
-			variables[ast['name']] = False
+# 	for k, v in ast.iteritems():
+# 		if k == "kind" and v == "variable":
+# 			variables[ast['name']] = False
 			
-		elif isinstance(v, dict):
-			variables.update(get_variables(v))
+# 		elif isinstance(v, dict):
+# 			variables.update(get_variables(v))
 			
-		elif isinstance(v, list):
-			for node in v:
-				variables.update(get_variables(node))
+# 		elif isinstance(v, list):
+# 			for node in v:
+# 				variables.update(get_variables(node))
 		
-	return variables
+# 	return variables
 

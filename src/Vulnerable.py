@@ -1,13 +1,13 @@
 
 from extras import yellow
 
-class Pattern(object):
+class Vulnerable(object):
 	
 	
-	def __init__(self, name = "vulnerability", entryPoints = None, escapes = None, sensitiveSinks = None):
+	def __init__(self, name = "vulnerability", entryPoints = None, validation_funcs = None, sensitiveSinks = None):
 		self.name = name.strip('\n')
 		self.entry_points = [x.strip('\n') for x in entryPoints]
-		self.escapes = [x.strip('\n') for x in escapes]
+		self.validation_funcs = [x.strip('\n') for x in validation_funcs]
 		self.sensitive_sinks = [x.strip('\n') for x in sensitiveSinks]
 		
 		# fix for ignored '$' from JSON
@@ -17,10 +17,10 @@ class Pattern(object):
 	
 	
 	def __str__(self):
-		out = yellow("Name:\t\t") + self.name + "\n"
+		out = yellow("Name:\t") + self.name + "\n"
 		out += yellow("Entry points:\t") + ", ".join(self.entry_points) + "\n"
-		out += yellow("Escapes:\t") + ", ".join(self.escapes) + "\n"
-		out += yellow("Sinks:\t\t") + ", ".join(self.sensitive_sinks) + "\n"
+		out += yellow("Validation functions:\t") + ", ".join(self.validation_funcs) + "\n"
+		out += yellow("Sensitive sinks:\t") + ", ".join(self.sensitive_sinks) + "\n"
 		
 		return out	
 	
@@ -28,7 +28,7 @@ class Pattern(object):
 	def __repr__(self):
 		#out = " Name: " + self.name
 		#out += " Entry points: " + ", ".join(self.entry_points)
-		#out += " Escapes: " + ", ".join(self.escapes)
+		#out += " Escapes: " + ", ".join(self.validation_funcs)
 		#out += " Sinks: " + ", ".join(self.sensitive_sinks)
 		#return out
 		
@@ -46,10 +46,10 @@ class Pattern(object):
 	
 	def add_escape(self, escape):
 		
-		if not(escape in self.escapes):
-			self.escapes.append(escape)
+		if not(escape in self.validation_funcs):
+			self.validation_funcs.append(escape)
 			
-		return self.escapes
+		return self.validation_funcs
 	
 	
 	def add_sensitive_sinks(self, sensitiveSink):

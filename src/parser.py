@@ -1,13 +1,10 @@
-
 import sys
 import json
 from itertools import islice
 from pprint import pprint
 
-from Pattern import Pattern
+from Vulnerable import Vulnerable
 from getters import *
-from extras import *
-
 
 
 def id_nodes(ast):
@@ -30,59 +27,33 @@ def id_nodes(ast):
 	return ast
 
 
-
 # returns a list of vulnerability patterns
-def get_patterns(filePath, display = False):
-	
-	try:
-		print(bold("\n<- importing vulnerability patterns from '" + filePath + "'"))
-		with open(filePath, 'r') as fp:
-			patterns = []
+def get_patterns(file_dir, display = False):
+	print("importing vulnerability patterns from" + file_dir)
+	with open(file_dir, 'r') as fp:
+		patterns = []
+		
+		while True:
+			field = list(islice(fp, 5))
 			
-			while True:
-				# read 5 lines from file
-				block = list(islice(fp, 5))
+			if field:
+				field = [x for x in field if x !='\n']		
+				pattern = Vulnerable(field[0], field[1].split(','), field[2].split(','), field[3].split(','))
+				patterns.append(pattern)
 				
-				if block:
-					# convert read lines into a list
-					block = [x for x in block if x !='\n']
-					
-					pattern = Pattern(block[0], block[1].split(','), block[2].split(','), block[3].split(','))
-					
-					patterns.append(pattern)
-					
-					if display:
-						print(pattern)
-					
-				else:
-					# cannot read 5 more lines
-					break
-			
-			return patterns
-			
-	except IOError as e:
-		print("Could not load patterns.\nMaybe you would like to specify a file with '-p'?")
-		print(e)
-		sys.exit(1)
+			else:
+				break
+		
+		return patterns
 
 
-
-# returns the path from a node (idealy a function node) to an unsanitized input
-# if one does not exist, returns null (None)
-def path_from_sink_to_entry(ast, node = None, patterns = None):
-	
-	if patterns is None:
-		patterns = get_patterns("patterns.txt")
-	
-	if node is None:
-		node = ast
-	
+def path_from_sink_to_entry(ast, node, patterns):
 	
 	if node['kind'] == "call":
 		
 		# check if function is a sanitization function
 		for pattern in patterns:
-			if node['what']['name'] in pattern.escapes:
+			if node['what']['name'] in pattern.validation_funcs:
 				return None
 		
 		for arg in node['arguments']:
@@ -90,8 +61,7 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 			if path is not None:
 				path.append(node['what']['name'])
 				return path
-		
-		
+				
 	elif node['kind'] == "echo":
 		#TODO maybe add more functions like echo
 		for arg in node['arguments']:
@@ -102,7 +72,6 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 		
 	elif node['kind'] == "offsetlookup":
-		
 		# check if variable is an entry point
 		for pattern in patterns:
 			if node['what']['name'] in pattern.entry_points:
@@ -113,6 +82,8 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 	elif node['kind'] == "variable":
 		assign = get_assignment(ast, node)
+		print("das")
+		print(assign)
 		if assign is not None:
 			path = path_from_sink_to_entry(ast, assign['right'], patterns)
 			
@@ -122,99 +93,71 @@ def path_from_sink_to_entry(ast, node = None, patterns = None):
 		
 		
 	elif node['kind'] == "if":
-		print(red("if blocks are not read here"))
+		print("no if is implemented")
 		
 		
 	elif node['kind'] == "while":
-		print(red("while blocks are not read here"))
+		print("no while is implemented")
 		
 		
 	else:
-		nodesOfInterest = get_calls(node) + get_variables(node)
+		nodesOfInterest = get_functions(node) + get_variables(node)
 		for n in nodesOfInterest:
 			path = path_from_sink_to_entry(ast, n, patterns)
 			if path is not None:
 				return path
-	
 	
 	# default return null
 	return None
 
 
 
-def check_file(filePath, patterns = None, displayPath = True):
+def check_vulnerability(file_dir, patterns):
+
+	print("analyzing " + file_dir)
+	with open(file_dir) as fp:
+		ast = json.load(fp)
 	
-	if patterns is None:
-		patterns = get_patterns("patterns.txt")
-	
-	
-	# import .json AST to python structures (dicts and lists)
-	try:
-		print(bold("\n-> analysing '" + filePath + "'"))
-		with open(filePath) as fp:
-			ast = json.load(fp)
-			
-	except IOError as e:
-		print("Could not analyse file.")
-		print(e)
-		sys.exit(1)
-	
-	
-	# find sensitive sinks and delete unmatched patterns
-	functions = get_calls(ast)
+	functions = get_functions(ast)
 	sinks = []
-	newPatterns = set()
+	subpatterns = []
 	for pattern in patterns:
-		for func in functions:
-			if func not in sinks:
-				if func['kind'] == "call":
-					name = func['what']['name']
+		for function in functions:
+			if function not in sinks:
+				if function['kind'] == "call":
+					name = function['what']['name']
 				else:
-					name = func['kind']
+					name = function['kind']
 					
 				if name in pattern.sensitive_sinks:
-					sinks.append(func)
-					newPatterns.add(pattern)
-				
-	patterns = list(newPatterns)
-	
-	
+					sinks.append(function)
+					subpatterns.append(pattern)
+
 	# id the AST nodes to distinguish x=x assignments
 	ast = id_nodes(ast)	
 	path = None
 	
 	# find path from sinks to a possible entry point
 	for sink in sinks:
-		path = path_from_sink_to_entry(ast, sink, patterns)
+		# print(sink)
+		path = path_from_sink_to_entry(ast, sink, subpatterns)
 		if path is not None:
 			break
-	
-	
+		
 	# compute the result
 	if path is None:
-		result = green("Vulnerability: None\n")
+		result = 'Vulnerability: None\n'
 		
 	else:
 		result = ""
 		for element in path:
-			for pattern in patterns:
-				if element not in pattern.escapes:
-					
-					result += red("Vulnerability:\t") + pattern.name \
-							+ red("\nEntry point:\t") + path[0] \
-							+ red("\nSensitive Sink:\t") + path[-1]
-						
-					if displayPath:
-						result += red("\npath: ") + italic(str(path)) + "\n"			
-						#result += red("\npath:\n")						
-						#for n in path:
-							#result += italic(n + "\n")
-					else:
-						result += "\n"
-					
-					#TODO maybe return all matching
+			for subpattern in subpatterns:
+				if element not in subpattern.validation_funcs:
+					result += "Vulnerability: " + subpattern.name + "\n" \
+							+ "Entry point: " + path[0] + "\n" \
+							+ "Sensitive Sink: " + path[-1] + "\n"
 					return result
-	
+
 	return result
 
 
